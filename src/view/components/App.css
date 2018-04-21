@@ -1,0 +1,35 @@
+html,
+body,
+main {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #B0B0B0;
+  font-family: 'Roboto', sans-serif;
+}
+
+input,
+select,
+textarea {
+  font-family: 'Roboto', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+.spent-root {
+  display: flex;
+  flex-direction: column;
+}
+
+.spent-main {
+  flex: 1;
+}

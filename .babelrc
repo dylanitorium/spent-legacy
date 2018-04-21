@@ -1,0 +1,25 @@
+{
+  "presets": [
+    "react-app",
+  ],
+  "plugins": [
+    ["module-alias", [
+      {
+        "src": "./src/view",
+        "expose": "view"
+      },
+      {
+        "src": "./src/state",
+        "expose": "state"
+      },
+      {
+        "src": "./src/server",
+        "expose": "server"
+      },
+      {
+        "src": "./src/view/utils/HOC",
+        "expose": "hoc"
+      }
+    ]]
+  ]
+}
