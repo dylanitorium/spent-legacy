@@ -1,15 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CreateBudgetForm from 'view/components/connected/CreateBudgetForm';
+import Incomes from 'view/components/connected/Incomes';
 
-const ActiveBudget = () => (
-  <div>
-    Everything else.
-    Add a budgets item to the menu.
-    Show default budget.
-    Show budget edit screen.
-  </div>
-)
+const ActiveBudget = props => (
+  <Incomes />
+);
+
 const Main = (props) => (
   <div className="spent-main">
     {props.hasBudgets ? <ActiveBudget /> : <CreateBudgetForm />}

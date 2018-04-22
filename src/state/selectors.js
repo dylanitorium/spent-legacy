@@ -19,13 +19,18 @@ export const budgetsAppSelector = createSelector(
 );
 
 export const activeBudgetIdSelector = createSelector(
-  budgetsAppSelector,
+  [budgetsAppSelector],
   budgets => budgets.activeBudgetId
 );
 
 export const activeBudgetSelector = createSelector(
   [budgetsDataSelector, activeBudgetIdSelector],
   getBudgetById,
+);
+
+export const activeBudgetLabelSelector = createSelector(
+  [activeBudgetSelector],
+  budget => (budget ? budget.label : undefined),
 );
 
 export const hasBudgetsSelector = createSelector(
@@ -37,3 +42,8 @@ export const makeBudgetByIdSelector = id => createSelector(
   budgetsDataSelector,
   budgets => getBudgetById(budgets, id),
 );
+
+export const incomesDataSelector = createSelector(
+  [dataSelector],
+  data => data.incomes,
+)

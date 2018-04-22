@@ -8,11 +8,11 @@ const Header = props => (
       Spent.
     </Menu.Item>
     {
-      props.activeBudget
+      props.activeBudgetLabel
         ? (
           <Menu.Menu position="right">
             <Menu.Item header>
-              {props.activeBudget.label}
+              {props.activeBudgetLabel}
             </Menu.Item>
           </Menu.Menu>
         )
@@ -22,7 +22,11 @@ const Header = props => (
 );
 
 Header.propTypes = {
-  activeBudget: PropTypes.bool.isRequired,
+  activeBudgetLabel: PropTypes.string,
+}
+
+Header.defaultProps = {
+  activeBudgetLabel: undefined,
 }
 
 export default Header;

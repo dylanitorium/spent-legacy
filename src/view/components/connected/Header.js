@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
-import { activeBudgetSelector } from 'state/selectors';
+import { activeBudgetLabelSelector } from 'state/selectors';
 import Header from 'view/components/pure/Header';
 
 const mapStateToProps = () => state => ({
-  activeBudget: activeBudgetSelector(state),
+  activeBudgetLabel: activeBudgetLabelSelector(state),
 });
 
 export default connect(mapStateToProps)(Header);
