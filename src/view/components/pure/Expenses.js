@@ -1,23 +1,23 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Table, Button, Icon, Form, Input, Label } from 'semantic-ui-react';
+import { Container, Header, Table, Button, Icon, Form, Input, Label } from 'semantic-ui-react';
 
 export default class Incomes extends Component {
   static propTypes = {
-    incomes: PropTypes.arrayOf(
+    items: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,
         label: PropTypes.string,
         amount: PropTypes.string,
       })
     ).isRequired,
-    createIncome: PropTypes.func.isRequired,
+    createItem: PropTypes.func.isRequired,
   };
 
   state = {
-    incomeLabel: '',
-    incomeAmount: '',
-    incomeFrequency: '',
+    itemLabel: '',
+    itemAmount: '',
+    itemFrequency: '',
   }
 
   handleChange = name => (event, { value }) => {
@@ -28,12 +28,12 @@ export default class Incomes extends Component {
 
   handleSubmit = () => {
     const {
-      incomeLabel: label,
-      incomeAmount: amount,
-      incomeFrequency: frequency,
+      itemLabel: label,
+      itemAmount: amount,
+      itemFrequency: frequency,
     } = this.state;
 
-    this.props.createIncome({
+    this.props.createItem({
       label,
       amount,
       frequency,
@@ -41,8 +41,8 @@ export default class Incomes extends Component {
   };
 
   render() {
-    const { incomes, frequencyOptions } = this.props;
-    const { incomeLabel, incomeAmount } = this.state;
+    const { items, frequencyOptions } = this.props;
+    const { itemLabel, itemAmount, itemFrequency } = this.state;
 
     return (
       <Container>
@@ -50,18 +50,18 @@ export default class Incomes extends Component {
           <Table celled>
             <Table.Body>
               {
-                incomes.length
-                  ? incomes.map(income => (
-                    <Table.Row key={income.id}>
-                      <Table.Cell>{income.label}</Table.Cell>
-                      <Table.Cell>{income.amount}</Table.Cell>
-                      <Table.Cell>{income.frequency}</Table.Cell>
+                items.length
+                  ? items.map(item => (
+                    <Table.Row key={item.id}>
+                      <Table.Cell>{item.label}</Table.Cell>
+                      <Table.Cell>{item.amount}</Table.Cell>
+                      <Table.Cell>{item.frequency}</Table.Cell>
                       <Table.Cell />
                     </Table.Row>
                   ))
                   : (
                     <Table.Row>
-                      <Table.Cell colSpan={4} textAlign="center" style={{ fontStyle: 'italic' }}>Add an income below</Table.Cell>
+                      <Table.Cell colSpan={4} textAlign="center" style={{ fontStyle: 'italic' }}>Add an expense below</Table.Cell>
                     </Table.Row>
                   )
               }
@@ -74,7 +74,7 @@ export default class Incomes extends Component {
                     <Form.Input
                       fluid
                       placeholder="Label"
-                      value={incomeLabel}
+                      value={itemLabel}
                       onChange={this.handleChange('incomeLabel')}
                     />
                   </Form.Field>
@@ -90,7 +90,7 @@ export default class Incomes extends Component {
                       <Label basic>$</Label>
                       <input
                         type="number" min="0.00" step="0.01"
-                        value={incomeAmount}
+                        value={itemAmount}
                         onChange={
                           event => this.handleChange('incomeAmount')(event, {
                             value: event.target.value
@@ -106,6 +106,7 @@ export default class Incomes extends Component {
                       fluid
                       placeholder='Frequency'
                       options={frequencyOptions}
+                      value={itemFrequency}
                       onChange={this.handleChange('incomeFrequency')}
                     />
                   </Form.Field>

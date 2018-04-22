@@ -55,18 +55,32 @@ const createCrudState = (name, initialState = {}) => {
     }
   };
 
-  const reducer = (state = [], action) => {
+  const reducer = (state = { index: 0, records: [] }, action) => {
     const { type } = action;
 
     switch(type) {
       case actionTypes.CREATE:
+        return {
+          ...state,
+          index: state.index + 1,
+          records: [
+            ...state.records.filter(({ id }) => id !== action.id),
+            itemReducer(state.records.find(({ id }) => id === action.id), action),
+          ],
+        };
       case actionTypes.UPDATE:
-        return [
-          ...state.filter(({ id }) => id !== action.id),
-          itemReducer(state.find(({ id }) => id === action.id), action),
-        ];
+        return {
+          ...state,
+          records: [
+            ...state.records.filter(({ id }) => id !== action.id),
+            itemReducer(state.records.find(({ id }) => id === action.id), action),
+          ],
+        };
       case actionTypes.DELETE:
-        return state.filter(({ id }) => id !== action.id);
+        return {
+          ...state,
+          records: state.records.filter(({ id }) => id !== action.id)
+        };
       default:
         return state;
     }

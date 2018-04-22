@@ -5,6 +5,13 @@ export const FREQUENCY = [
   'YEAR',
 ];
 
+export const FREQUENCY_MAP = {
+  WEEK: 'WEEK',
+  FORTNIGHT: 'FORTNIGHT',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
+}
+
 export const FREQUENCY_LABELS = {
   WEEK: 'Weekly',
   FORTNIGHT: 'Fortnightly',

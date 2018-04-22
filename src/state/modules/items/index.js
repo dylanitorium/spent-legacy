@@ -1,12 +1,30 @@
-import createCrudState from 'state/utils/createCrudState';
+import { FREQUENCY_MAP } from 'state/constants';
+import { dataActions } from './data';
+export { dataReducer } from './data';
 
-const initialState = {
-  label: '',
-  budgetId: 0,
-  categoryId: 0,
-  groupId: 0,
-  frequency: '',
-  amount: 0
-};
+export const actions = {
+  ...dataActions,
+  createItemWithBudgetId: data => (
+    (dispatch, getState) => {
+      const {
+        app: {
+          budgets: {
+            activeBudgetId
+          }
+        },
+        data: {
+          items: {
+            index
+          }
+        }
+      } = getState();
 
-export const { actions, actionTypes, reducer: dataReducer } = createCrudState('items', initialState);
+      dispatch(dataActions.create({
+        label: data.label || `Item ${index + 1}`,
+        amount: parseInt(data.amount, 2) || 0,
+        frequency: data.frequency || FREQUENCY_MAP.YEAR,
+        budgetId: activeBudgetId,
+      }));
+    }
+  ),
+};;
