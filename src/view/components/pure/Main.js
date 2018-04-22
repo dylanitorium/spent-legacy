@@ -1,24 +1,44 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Header, Container, Segment } from 'semantic-ui-react';
+import { Header, Grid, Segment, Rail, Sticky } from 'semantic-ui-react';
 import CreateBudgetForm from 'view/components/connected/CreateBudgetForm';
 import Incomes from 'view/components/connected/Incomes';
 import Expenses from 'view/components/connected/Expenses';
+import BudgetOverview from 'view/components/connected/BudgetOverview';
 
-const ActiveBudget = () => (
-  <div>
-    <Container>
-      <Header>Incomes Forecast</Header>
-      <Segment>
-        <Incomes />
-      </Segment>
-      <Header>Expenses Forecast</Header>
-      <Segment>
-        <Expenses />
-      </Segment>
-    </Container>
-  </div>
-);
+class ActiveBudget extends Component {
+  state = {}
+
+  handleContextRef = contextRef => this.setState({ contextRef })
+
+  render() {
+    const { contextRef } = this.state;
+
+    return (
+      <div>
+        <Grid padded>
+          <Grid.Column width={12}>
+            <Header>Incomes Forecast</Header>
+            <Segment>
+              <Incomes />
+            </Segment>
+            <Header>Expenses Forecast</Header>
+            <Segment>
+              <Expenses />
+            </Segment>
+          </Grid.Column>
+          <Grid.Column width={4}>
+            <div ref={this.handleContextRef}>
+              <Sticky context={contextRef}>
+                <BudgetOverview />
+              </Sticky>
+            </div>
+          </Grid.Column>
+        </Grid>
+      </div>
+    );
+  }
+}
 
 const Main = (props) => (
   <div className="spent-main">

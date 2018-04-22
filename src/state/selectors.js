@@ -1,9 +1,13 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
-import { FREQUENCY_LABELS } from 'state/constants';
+import { FREQUENCY_LABELS, FREQUENCY_FACTORS } from 'state/constants';
 
 // Non-Selector Utils
 const getBudgetById = (budgets, id) => budgets.find(({ id: _id }) => id === _id);
+
+const reduceAmounts = items => items.reduce((a, { amount, frequency }) => (a + amount) * FREQUENCY_FACTORS[frequency], 0);
+
+const formatMoney = amount => moneyFormatter.format('USD', amount)
 
 // Selectors
 export const dataSelector = state => state.data;
@@ -60,16 +64,47 @@ export const incomesFormattedSelector = createSelector(
   })),
 );
 
-export const itemsDataSelector = createSelector(
+export const expensesDataSelector = createSelector(
   [dataSelector],
-  data => data.items.records,
+  data => data.expenses.records,
 );
 
-export const itemsFormattedSelector = createSelector(
-  [itemsDataSelector],
-  items => items.map(item => ({
-    ...item,
-    amount: moneyFormatter.format('USD', item.amount),
-    frequency: FREQUENCY_LABELS[item.frequency],
+export const expensesFormattedSelector = createSelector(
+  [expensesDataSelector],
+  expenses => expenses.map(expense => ({
+    ...expense,
+    amount: moneyFormatter.format('USD', expense.amount),
+    frequency: FREQUENCY_LABELS[expenses.frequency],
   })),
+);
+
+export const incomesTotalSelector = createSelector(
+  [incomesDataSelector],
+  reduceAmounts,
+);
+
+export const incomesTotalFormattedSelector = createSelector(
+  [incomesTotalSelector],
+  formatMoney,
+);
+
+export const expensesTotalSelector = createSelector(
+  [expensesDataSelector],
+  reduceAmounts,
+);
+
+export const expensesTotalFormattedSelector = createSelector(
+  [expensesTotalSelector],
+  formatMoney,
+);
+
+export const budgetBalanceSelector = createSelector(
+  incomesTotalSelector,
+  expensesTotalSelector,
+  (incomes, expenses) => incomes - expenses,
+);
+
+export const budgetBalanceFormattedSelector = createSelector(
+  [budgetBalanceSelector],
+  formatMoney,
 );

@@ -6,12 +6,12 @@ import { actions as incomesActions } from 'state/modules/incomes';
 import Incomes from 'view/components/pure/Incomes';
 
 const mapStateToProps = () => state => ({
-  incomes: incomesFormattedSelector(state),
+  items: incomesFormattedSelector(state),
   frequencyOptions: FREQUENCY_OPTIONS,
 });
 
 const mapDispatchToProps = {
-  createIncome: incomesActions.createIncomeWithBudgetId,
+  createItem: incomesActions.createIncomeWithBudgetId,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Incomes);

@@ -19,7 +19,7 @@ export const FREQUENCY_LABELS = {
   YEAR: 'Yearly',
 };
 
-export const FREQUENCIES_FACTORS = {
+export const FREQUENCY_FACTORS = {
   WEEK: 52,
   FORTNIGHT: 26,
   MONTH: 12,

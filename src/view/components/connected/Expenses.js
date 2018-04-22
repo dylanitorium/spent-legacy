@@ -1,17 +1,17 @@
 import { connect } from 'react-redux';
 import { FREQUENCY_OPTIONS } from 'state/constants';
-import { itemsFormattedSelector } from 'state/selectors';
-import { actions as itemsActions } from 'state/modules/items';
+import { expensesFormattedSelector } from 'state/selectors';
+import { actions as expensesActions } from 'state/modules/expenses';
 
 import Expenses from 'view/components/pure/Expenses';
 
 const mapStateToProps = () => state => ({
-  items: itemsFormattedSelector(state),
+  items: expensesFormattedSelector(state),
   frequencyOptions: FREQUENCY_OPTIONS,
 });
 
 const mapDispatchToProps = {
-  createItem: itemsActions.createItemWithBudgetId,
+  createItem: expensesActions.createExpenseWithBudgetId,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Expenses);

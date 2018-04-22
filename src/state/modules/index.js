@@ -3,13 +3,13 @@ import { dataReducer as budgetsData, appReducer as budgetsApp } from 'state/modu
 import { dataReducer as incomesData, appReducer as incomesApp } from 'state/modules/incomes';
 import { dataReducer as categoriesData, appReducer as categoriesApp } from 'state/modules/categories';
 import { dataReducer as groupsData, appReducer as groupsApp } from 'state/modules/groups';
-import { dataReducer as itemsData, appReducer as itemsApp } from 'state/modules/items';
+import { dataReducer as expensesData, appReducer as itemsApp } from 'state/modules/expenses';
 
 const data = combineReducers({
   budgets: budgetsData,
   categories: categoriesData,
   groups: groupsData,
-  items: itemsData,
+  expenses: expensesData,
   incomes: incomesData,
 });
 
