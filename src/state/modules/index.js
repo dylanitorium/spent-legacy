@@ -1,14 +1,28 @@
 import { combineReducers } from 'redux';
-import { reducer as budgets } from 'state/modules/budgets';
-import { reducer as categories } from 'state/modules/categories';
-import { reducer as groups } from 'state/modules/groups';
-import { reducer as items } from 'state/modules/items';
+import { dataReducer as budgetsData, appReducer as budgetsApp } from 'state/modules/budgets';
+import { dataReducer as categoriesData, appReducer as categoriesApp } from 'state/modules/categories';
+import { dataReducer as groupsData, appReducer as groupsApp } from 'state/modules/groups';
+import { dataReducer as itemsData, appReducer as itemsApp } from 'state/modules/items';
 
-const reducer = combineReducers({
-  budgets,
-  categories,
-  groups,
-  items,
+const data = combineReducers({
+  budgets: budgetsData,
+  categories: categoriesData,
+  groups: groupsData,
+  items: itemsData,
 });
 
-export default reducer;
+const app = combineReducers({
+  budgets: budgetsApp,
+  // categories: categoriesApp,
+  // groups: groupsApp,
+  // items: itemsApp,
+});
+
+
+const master = combineReducers({
+  data,
+  app
+});
+
+
+export default master;

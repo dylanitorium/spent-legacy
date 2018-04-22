@@ -20,9 +20,7 @@ export default class CreateBudgetForm extends Component {
   handleSubmit = () => {
     const { budgetName } = this.state;
 
-    this.props.createBudget({
-      label: budgetName
-    });
+    this.props.createBudget(budgetName);
   }
 
   render() {

@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/es/integration/react';
 import { store, persistor } from 'state/store';
 import { Loader, Dimmer } from 'semantic-ui-react';
-import Header from 'view/components/pure/Header';
+import Header from 'view/components/connected/Header';
 import Main from 'view/components/connected/Main';
 import './App.css';
 

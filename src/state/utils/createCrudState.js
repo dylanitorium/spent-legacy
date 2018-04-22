@@ -3,9 +3,9 @@ import moment from 'moment';
 
 const createCrudState = (name, initialState = {}) => {
   const actionTypes = {
-    CREATE: `spent/${name}/create`,
-    UPDATE: `spent/${name}/update`,
-    DELETE: `spent/${name}/delete`,
+    CREATE: `spent/data/${name}/create`,
+    UPDATE: `spent/data/${name}/update`,
+    DELETE: `spent/data/${name}/delete`,
   };
 
   const actions = {
@@ -42,7 +42,7 @@ const createCrudState = (name, initialState = {}) => {
 
   const itemReducer = (state = initialState, action) => {
     const { type } = action;
-    
+
     switch(type) {
       case actionTypes.CREATE:
       case actionTypes.UPDATE:

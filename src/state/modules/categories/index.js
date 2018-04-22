@@ -6,4 +6,4 @@ const initialState = {
   groupId: 0,
 };
 
-export const { actions, actionTypes, reducer } = createCrudState('categories', initialState);
+export const { actions, actionTypes, reducer: dataReducer } = createCrudState('categories', initialState);

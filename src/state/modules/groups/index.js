@@ -5,4 +5,4 @@ const initialState = {
   budgetId: 0,
 };
 
-export const { actions, actionTypes, reducer } = createCrudState('groups', initialState);
+export const { actions, actionTypes, reducer: dataReducer } = createCrudState('groups', initialState);

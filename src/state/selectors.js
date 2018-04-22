@@ -4,21 +4,36 @@ import { createSelector } from 'reselect';
 const getBudgetById = (budgets, id) => budgets.find(({ id: _id }) => id === _id);
 
 // Selectors
-export const budgetsSelector = state => state.budgets;
+export const dataSelector = state => state.data;
 
-export const defaultBudgetIdSelector = state => state.application.budgets.defaultBudgetId;
+export const appSelector = state => state.app;
 
-export const defaultBudgetSelector = createSelector(
-  [budgetsSelector, defaultBudgetIdSelector],
+export const budgetsDataSelector = createSelector(
+  [dataSelector],
+  data => data.budgets,
+);
+
+export const budgetsAppSelector = createSelector(
+  [appSelector],
+  state => state.budgets,
+);
+
+export const activeBudgetIdSelector = createSelector(
+  budgetsAppSelector,
+  budgets => budgets.activeBudgetId
+);
+
+export const activeBudgetSelector = createSelector(
+  [budgetsDataSelector, activeBudgetIdSelector],
   getBudgetById,
 );
 
 export const hasBudgetsSelector = createSelector(
-  [budgetsSelector],
+  [budgetsDataSelector],
   budgets => budgets.length > 0,
 );
 
 export const makeBudgetByIdSelector = id => createSelector(
-  budgetsSelector,
+  budgetsDataSelector,
   budgets => getBudgetById(budgets, id),
 );

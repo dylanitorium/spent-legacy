@@ -9,4 +9,4 @@ const initialState = {
   amount: 0
 };
 
-export const { actions, actionTypes, reducer } = createCrudState('items', initialState);
+export const { actions, actionTypes, reducer: dataReducer } = createCrudState('items', initialState);
