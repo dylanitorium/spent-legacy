@@ -12,6 +12,7 @@ const mapStateToProps = () => state => ({
 
 const mapDispatchToProps = {
   createItem: expensesActions.createExpenseWithBudgetId,
+  deleteItem: expensesActions.delete,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Expenses);

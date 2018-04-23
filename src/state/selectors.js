@@ -5,13 +5,12 @@ import { FREQUENCY_LABELS, FREQUENCY_FACTORS } from 'state/constants';
 // Non-Selector Utils
 const getBudgetById = (budgets, id) => budgets.find(({ id: _id }) => id === _id);
 
-const reduceAmounts = items => items.reduce((a, { amount, frequency }) => (a + amount) * FREQUENCY_FACTORS[frequency], 0);
+const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
 const formatMoney = amount => moneyFormatter.format('USD', amount)
 
 // Selectors
 export const dataSelector = state => state.data;
-
 
 export const appSelector = state => state.app;
 
@@ -74,7 +73,7 @@ export const expensesFormattedSelector = createSelector(
   expenses => expenses.map(expense => ({
     ...expense,
     amount: moneyFormatter.format('USD', expense.amount),
-    frequency: FREQUENCY_LABELS[expenses.frequency],
+    frequency: FREQUENCY_LABELS[expense.frequency],
   })),
 );
 

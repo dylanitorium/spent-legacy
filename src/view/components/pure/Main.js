@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Header, Grid, Segment, Rail, Sticky } from 'semantic-ui-react';
+import { Divider, Grid, Sticky } from 'semantic-ui-react';
 import CreateBudgetForm from 'view/components/connected/CreateBudgetForm';
 import Incomes from 'view/components/connected/Incomes';
 import Expenses from 'view/components/connected/Expenses';
@@ -18,14 +18,9 @@ class ActiveBudget extends Component {
       <div>
         <Grid padded>
           <Grid.Column width={12}>
-            <Header>Incomes Forecast</Header>
-            <Segment>
               <Incomes />
-            </Segment>
-            <Header>Expenses Forecast</Header>
-            <Segment>
+              <Divider />
               <Expenses />
-            </Segment>
           </Grid.Column>
           <Grid.Column width={4}>
             <div ref={this.handleContextRef}>

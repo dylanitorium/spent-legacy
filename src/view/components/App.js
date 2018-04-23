@@ -24,7 +24,7 @@ const SpentLoader = () => (
   </Dimmer>
 );
 
-persistor.purge();
+// persistor.purge();
 
 export default () => (
   <Provider store={store}>
