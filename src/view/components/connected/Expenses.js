@@ -1,18 +1,24 @@
 import { connect } from 'react-redux';
 import { FREQUENCY_OPTIONS } from 'state/constants';
-import { expensesFormattedSelector } from 'state/selectors';
+import { expensesFormattedSelector, makeGroupsForNamespaceSelector } from 'state/selectors';
 import { actions as expensesActions } from 'state/modules/expenses';
+import { actions as groupsActions } from 'state/modules/groups';
 
 import Expenses from 'view/components/pure/Expenses';
 
-const mapStateToProps = () => state => ({
-  items: expensesFormattedSelector(state),
-  frequencyOptions: FREQUENCY_OPTIONS,
-});
+const mapStateToProps = () => {
+  const groupsForNamespaceSelector = makeGroupsForNamespaceSelector('expenses')
+  return state => ({
+    items: expensesFormattedSelector(state),
+    frequencyOptions: FREQUENCY_OPTIONS,
+    groups: groupsForNamespaceSelector(state)
+  });
+}
 
 const mapDispatchToProps = {
   createItem: expensesActions.createExpenseWithBudgetId,
   deleteItem: expensesActions.delete,
+  createGroup: groupsActions.createGroupWithBudgetId,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Expenses);

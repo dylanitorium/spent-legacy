@@ -4,14 +4,15 @@ import { Table, Button, Icon, Form, Input, Label, Header, Checkbox, Dropdown } f
 
 class AddToGroupControl extends Component {
   static propTypes = {
-    addGroup: PropTypes.func.isRequired,
+    createGroup: PropTypes.func.isRequired,
     selectedItems: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
+    namespace: PropTypes.string.isRequired,
   }
 
   static defaultProps = {
     groups: [],
-    addGroup: () => {},
+    createGroup: () => { console.log('no') },
   }
 
   state = {
@@ -29,9 +30,10 @@ class AddToGroupControl extends Component {
   }
 
   onSubmit = () => {
+    const { namespace } = this.props;
     const { groupName } = this.state;
     this.setState({ groupName: '' });
-    this.props.addGroup({ label: groupName });
+    this.props.createGroup({ label: groupName, namespace });
   }
 
   render = () => {
@@ -135,6 +137,8 @@ export default class ItemTable extends Component {
   render() {
     const { items, frequencyOptions, name } = this.props;
     const { itemLabel, itemAmount, itemFrequency, selectedItems } = this.state;
+
+    console.log(this.props);
 
     return (
       <div>

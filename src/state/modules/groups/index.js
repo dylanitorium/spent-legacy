@@ -1,8 +1,22 @@
-import createCrudState from 'state/utils/createCrudState';
+import { dataActions } from './data';
+export { dataReducer } from './data';
 
-const initialState = {
-  label: '',
-  budgetId: 0,
+export const actions = {
+  ...dataActions,
+  createGroupWithBudgetId: data => (
+    (dispatch, getState) => {
+      const {
+        app: {
+          budgets: {
+            activeBudgetId
+          }
+        }
+      } = getState();
+
+      dispatch(dataActions.create({
+        ...data,
+        budgetId: activeBudgetId,
+      }));
+    }
+  )
 };
-
-export const { actions, actionTypes, reducer: dataReducer } = createCrudState('groups', initialState);

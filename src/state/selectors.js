@@ -3,11 +3,16 @@ import moneyFormatter from 'money-formatter';
 import { FREQUENCY_LABELS, FREQUENCY_FACTORS } from 'state/constants';
 
 // Non-Selector Utils
-const getBudgetById = (budgets, id) => budgets.find(({ id: _id }) => id === _id);
+const where = name => ({
+  is: value => ({ [name]: _value }) => (_value === value),
+  isNot: value => ({ [name]: _value }) => (_value !== value),
+});
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
-const formatMoney = amount => moneyFormatter.format('USD', amount)
+const formatMoney = amount => moneyFormatter.format('USD', amount);
+
+const getBudgetById = (budgets, id) => budgets.find(where('id').is(id));
 
 // Selectors
 export const dataSelector = state => state.data;
@@ -106,4 +111,14 @@ export const budgetBalanceSelector = createSelector(
 export const budgetBalanceFormattedSelector = createSelector(
   [budgetBalanceSelector],
   formatMoney,
+);
+
+export const groupsDataSelector = createSelector(
+  [dataSelector],
+  data => data.groups.records,
+)
+
+export const makeGroupsForNamespaceSelector = namespace => createSelector(
+  [groupsDataSelector],
+  (groups) => groups.filter(where('namespace').is(namespace)),
 );

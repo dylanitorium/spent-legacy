@@ -1,6 +1,6 @@
 import { FREQUENCY_MAP } from 'state/constants';
 
-const makeCreateWithBudgetId = (reducerName, label, actions) => data => (
+const makeCreateAmountableWithBudgetId = (reducerName, label, actions) => data => (
   (dispatch, getState) => {
     const {
       app: {
@@ -24,4 +24,4 @@ const makeCreateWithBudgetId = (reducerName, label, actions) => data => (
   }
 );
 
-export default makeCreateWithBudgetId;
+export default makeCreateAmountableWithBudgetId;

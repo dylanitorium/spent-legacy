@@ -1,9 +1,9 @@
-import makeCreateWithBudgetId from 'state/utils/makeCreateWithBudgetId';
+import makeCreateAmountableWithBudgetId from 'state/utils/makeCreateAmountableWithBudgetId';
 import { dataActions } from './data';
 export { dataReducer } from './data';
 
 
 export const actions = {
   ...dataActions,
-  createExpenseWithBudgetId: makeCreateWithBudgetId('expenses', 'Expense', dataActions)
+  createExpenseWithBudgetId: makeCreateAmountableWithBudgetId('expenses', 'Expense', dataActions)
 };;
