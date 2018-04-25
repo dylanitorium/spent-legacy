@@ -1,5 +1,6 @@
 import uuid from 'uuid/v1';
 import moment from 'moment';
+import { where } from 'view/utils/arrayUtils';
 
 const createCrudState = (name, initialState = {}) => {
   const actionTypes = {
@@ -64,22 +65,32 @@ const createCrudState = (name, initialState = {}) => {
           ...state,
           index: state.index + 1,
           records: [
-            ...state.records.filter(({ id }) => id !== action.id),
-            itemReducer(state.records.find(({ id }) => id === action.id), action),
+            ...state.records.filter(where('id').isNot(action.id)),
+            itemReducer(state.records.find(where('id').is(action.id)), action),
           ],
         };
       case actionTypes.UPDATE:
-        return {
-          ...state,
-          records: [
-            ...state.records.filter(({ id }) => id !== action.id),
-            itemReducer(state.records.find(({ id }) => id === action.id), action),
-          ],
-        };
+        if (Array.isArray(action.id)) {
+          return {
+            ...state,
+            records: [
+              ...state.records.filter(where('id').isNotIn(action.id)),
+              ...state.records.filter(where('id').isIn(action.id)).map(item => itemReducer(item, action)),
+            ],
+          };
+        } else {
+          return {
+            ...state,
+            records: [
+              ...state.records.filter(where('id').isNot(action.id)),
+              itemReducer(state.records.find(where('id').is(action.id)), action),
+            ],
+          };
+        }
       case actionTypes.DELETE:
         return {
           ...state,
-          records: state.records.filter(({ id }) => id !== action.id)
+          records: state.records.filter(where('id').isNot(action.id))
         };
       default:
         return state;

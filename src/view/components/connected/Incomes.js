@@ -10,6 +10,7 @@ const mapStateToProps = () => {
   const groupsForNamespaceSelector = makeGroupsForNamespaceSelector('incomes')
   return (state, props) => ({
     items: incomesFormattedSelector(state),
+    itemsCount: incomesFormattedSelector(state).length,
     frequencyOptions: FREQUENCY_OPTIONS,
     groups: groupsForNamespaceSelector(state)
   });
@@ -19,6 +20,8 @@ const mapDispatchToProps = {
   createItem: incomesActions.createIncomeWithBudgetId,
   deleteItem: incomesActions.delete,
   createGroup: groupsActions.createGroupWithBudgetId,
+  deleteGroup: groupsActions.delete,
+  addItemsToGroup: incomesActions.update
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Incomes);

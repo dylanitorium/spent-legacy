@@ -1,39 +1,49 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table, Button, Icon, Form, Input, Label, Header, Checkbox, Dropdown } from 'semantic-ui-react';
+import { where } from 'view/utils/arrayUtils';
 
 class AddToGroupControl extends Component {
   static propTypes = {
     createGroup: PropTypes.func.isRequired,
+    addItemsToGroup: PropTypes.func.isRequired,
     selectedItems: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     namespace: PropTypes.string.isRequired,
+
   }
 
   static defaultProps = {
     groups: [],
-    createGroup: () => { console.log('no') },
+    createGroup: () => {},
+    addItemsToGroup: () => {},
   }
 
   state = {
     groupName: '',
-  };
+  }
 
   onChange = (event, { value: groupName }) => {
     this.setState({ groupName })
   }
 
-  onDropdownChange = (event, data) => {
-    if (event && event.key === "Enter") {
-      this.onSubmit();
-    }
-  }
-
-  onSubmit = () => {
+  onSubmit = (event) => {
+    if (event) event.stopPropagation();
     const { namespace } = this.props;
     const { groupName } = this.state;
     this.setState({ groupName: '' });
     this.props.createGroup({ label: groupName, namespace });
+  }
+
+  onSelect = groupId => () => {
+    this.props.addItemsToGroup(this.props.selectedItems, { groupId });
+    this.props.onSelect();
+  }
+
+  onDelete = groupId => event => {
+    event.stopPropagation();
+    // For some reason, making this asynchronous prevents the dropdown from closing
+    setTimeout(() => this.props.deleteGroup(groupId), 1);
   }
 
   render = () => {
@@ -48,8 +58,9 @@ class AddToGroupControl extends Component {
         labeled
         button
         className="icon"
-        disabled={!!selectedItems.length}
-        onClose={this.onDropdownChange}
+        disabled={!selectedItems.length}
+        closeOnChange={false}
+        onChange={this.onSelect}
       >
         <Dropdown.Menu>
           <Input
@@ -63,7 +74,12 @@ class AddToGroupControl extends Component {
           <Dropdown.Divider />
           <Dropdown.Header icon="list" content="Groups" />
           <Dropdown.Menu scrolling>
-            {groups.map(group => <Dropdown.Item {...group} />)}
+            {groups.map(group => (
+              <Dropdown.Item key={group.id} onClick={this.onSelect(group.id)}>
+                <Icon name="delete" color="red" className="right floated" onClick={this.onDelete}/>
+                {group.label}
+              </Dropdown.Item>
+            ))}
           </Dropdown.Menu>
         </Dropdown.Menu>
       </Dropdown>
@@ -97,7 +113,7 @@ export default class ItemTable extends Component {
 
     if (selectedItems.includes(id)) {
       this.setState({
-        selectedItems: selectedItems.filter(({ id: _id }) => id !== _id),
+        selectedItems: selectedItems.filter(where().value.isNot(id)),
       });
     } else {
       this.setState({
@@ -110,6 +126,8 @@ export default class ItemTable extends Component {
   }
 
   isChecked = id => this.state.selectedItems.includes(id);
+
+  onGroupSelect = () => this.setState({ selectedItems: [] });
 
   handleSubmit = () => {
     const {
@@ -130,21 +148,25 @@ export default class ItemTable extends Component {
       amount,
       frequency,
     });
-  };
+  }
 
-  deleteItem = id => () => this.props.deleteItem(id)
+  deleteItem = id => () => {
+    const { selectedItems } = this.state;
+    this.setState({
+      selectedItems: selectedItems.filter(where().value.isNot(id)),
+    });
+    this.props.deleteItem(id);
+  }
 
   render() {
     const { items, frequencyOptions, name } = this.props;
     const { itemLabel, itemAmount, itemFrequency, selectedItems } = this.state;
 
-    console.log(this.props);
-
     return (
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', }}>
           <Header>{this.props.title}</Header>
-          <AddToGroupControl {...this.props} selectedItems={selectedItems}/>
+          <AddToGroupControl {...this.props} selectedItems={selectedItems} onSelect={this.onGroupSelect}/>
         </div>
           <Form onSubmit={this.handleSubmit}>
             <Table compact="very">
@@ -153,7 +175,7 @@ export default class ItemTable extends Component {
                   items.length
                     ? items.map(item => (
                       <Table.Row key={item.id}>
-                        <Table.Cell><Checkbox onClick={this.handleCheck(item.id)} /></Table.Cell>
+                        <Table.Cell><Checkbox onClick={this.handleCheck(item.id)} checked={this.isChecked(item.id)} /></Table.Cell>
                         <Table.Cell>{item.label}</Table.Cell>
                         <Table.Cell>{item.amount}</Table.Cell>
                         <Table.Cell>{item.frequency}</Table.Cell>

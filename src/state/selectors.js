@@ -1,18 +1,25 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
 import { FREQUENCY_LABELS, FREQUENCY_FACTORS } from 'state/constants';
-
-// Non-Selector Utils
-const where = name => ({
-  is: value => ({ [name]: _value }) => (_value === value),
-  isNot: value => ({ [name]: _value }) => (_value !== value),
-});
+import { where } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
 const formatMoney = amount => moneyFormatter.format('USD', amount);
 
 const getBudgetById = (budgets, id) => budgets.find(where('id').is(id));
+
+const formatAmountable = amountable => ({
+  ...amountable,
+  amount: moneyFormatter.format('USD', amountable.amount),
+  frequency: FREQUENCY_LABELS[amountable.frequency],
+});
+
+const asDropdownItem = group => ({
+  text: group.label,
+  value: group.id,
+  key: group.id,
+});
 
 // Selectors
 export const dataSelector = state => state.data;
@@ -49,11 +56,6 @@ export const hasBudgetsSelector = createSelector(
   budgets => budgets.length > 0,
 );
 
-export const makeBudgetByIdSelector = id => createSelector(
-  budgetsDataSelector,
-  budgets => getBudgetById(budgets, id),
-);
-
 export const incomesDataSelector = createSelector(
   [dataSelector],
   data => data.incomes.records,
@@ -61,11 +63,17 @@ export const incomesDataSelector = createSelector(
 
 export const incomesFormattedSelector = createSelector(
   [incomesDataSelector],
-  incomes => incomes.map(income => ({
-    ...income,
-    amount: moneyFormatter.format('USD', income.amount),
-    frequency: FREQUENCY_LABELS[income.frequency],
-  })),
+  incomes => incomes.map(formatAmountable),
+);
+
+export const makeIncomesByBudgetIdSelector = budgetId => createSelector(
+  [incomesDataSelector],
+  incomes => incomes.filter(where('budgetId').is(budgetId))
+);
+
+export const makeIncomesFormattedSelector = budgetId => createSelector(
+  [makeIncomesByBudgetIdSelector(budgetId)],
+  incomes => incomes.map(formatAmountable),
 );
 
 export const expensesDataSelector = createSelector(
@@ -73,13 +81,19 @@ export const expensesDataSelector = createSelector(
   data => data.expenses.records,
 );
 
-export const expensesFormattedSelector = createSelector(
+export const expensesFormattedSelector = budgetId => createSelector(
   [expensesDataSelector],
-  expenses => expenses.map(expense => ({
-    ...expense,
-    amount: moneyFormatter.format('USD', expense.amount),
-    frequency: FREQUENCY_LABELS[expense.frequency],
-  })),
+  expenses => expenses.map(formatAmountable),
+);
+
+export const makeExpensesByBudgetIdSelector = budgetId => createSelector(
+  [expensesDataSelector],
+  expenses => expenses.filter(where('budgetId').is(budgetId))
+);
+
+export const makeExpensesFormattedSelector = budgetId => createSelector(
+  [makeExpensesByBudgetIdSelector(budgetId)],
+  expenses => expenses.map(formatAmountable),
 );
 
 export const incomesTotalSelector = createSelector(
@@ -116,7 +130,16 @@ export const budgetBalanceFormattedSelector = createSelector(
 export const groupsDataSelector = createSelector(
   [dataSelector],
   data => data.groups.records,
-)
+);
+
+export const groupsFormattedSelector = createSelector(
+  [groupsDataSelector],
+  groups => groups.map(group => ({
+    text: group.label,
+    value: group.id,
+    key: group.id,
+  }))
+);
 
 export const makeGroupsForNamespaceSelector = namespace => createSelector(
   [groupsDataSelector],

@@ -5,5 +5,5 @@ export { dataReducer } from './data';
 
 export const actions = {
   ...dataActions,
-  createExpenseWithBudgetId: makeCreateAmountableWithBudgetId('expenses', 'Expense', dataActions)
+  createExpenseWithBudgetId: makeCreateAmountableWithBudgetId('expenses', 'Expense', dataActions),
 };;
