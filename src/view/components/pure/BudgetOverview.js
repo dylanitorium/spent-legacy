@@ -1,27 +1,42 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Segment, Header, Divider, Statistic } from 'semantic-ui-react';
 
 const BudgetData = props => (
   <div>
-  <Header>Overview (annual)</Header>
-  <Segment>
-    <Header>Incomes</Header>
-    <div style={{ textAlign: 'right' }}>
-      <Statistic value={props.incomesTotal} size="mini" />
-    </div>
-    <Divider />
-    <Header>Expenses</Header>
-    <div style={{ textAlign: 'right' }}>
-      <Statistic value={props.expensesTotal} size="mini" />
-    </div>
-    <Divider />
-    <Header>Balance</Header>
-    <div style={{ textAlign: 'right' }}>
-      <Statistic value={props.budgetBalance} size="mini" />
-    </div>
-    <Divider />
-  </Segment>
+    <Segment>
+      <Header>Incomes</Header>
+      <div>
+        {props.incomes.map(group => (
+          <div key={group.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <div>{group.label}</div>
+            <div>{group.amount}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <Statistic value={props.incomesTotal} size="mini" />
+      </div>
+      <Divider />
+      <Header>Expenses</Header>
+      <div>
+        {props.expenses.map(group => (
+          <div key={group.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <div>{group.label}</div>
+            <div>{group.amount}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <Statistic value={props.expensesTotal} size="mini" />
+      </div>
+      <Divider />
+      <Header>Balance</Header>
+      <div style={{ textAlign: 'right' }}>
+        <Statistic value={props.budgetBalance} size="mini" />
+      </div>
+      <Divider />
+    </Segment>
   </div>
 );
 

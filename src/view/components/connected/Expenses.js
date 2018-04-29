@@ -1,27 +1,28 @@
 import { connect } from 'react-redux';
 import { FREQUENCY_OPTIONS } from 'state/constants';
-import { makeExpensesFormattedSelector, makeGroupsForNamespaceSelector, activeBudgetIdSelector } from 'state/selectors';
+import {
+  groupedExpensesSelector as makeGroupedExpensesSelector,
+  activeBudgetIdSelector } from 'state/selectors';
 import { actions as expensesActions } from 'state/modules/expenses';
 import { actions as groupsActions } from 'state/modules/groups';
 
 import Expenses from 'view/components/pure/Expenses';
 
 const mapStateToProps = () => {
-  const groupsForNamespaceSelector = makeGroupsForNamespaceSelector('expenses')
+  const groupedExpensesSelector = makeGroupedExpensesSelector('expenses');
   return state => ({
-    items: makeExpensesFormattedSelector(activeBudgetIdSelector(state))(state),
-    itemsCount: makeExpensesFormattedSelector(activeBudgetIdSelector(state))(state).count,
+    groups: groupedExpensesSelector(activeBudgetIdSelector(state))(state),
     frequencyOptions: FREQUENCY_OPTIONS,
-    groups: groupsForNamespaceSelector(state)
   });
 }
 
 const mapDispatchToProps = {
   createItem: expensesActions.createExpenseWithBudgetId,
+  updateItem: expensesActions.update,
   deleteItem: expensesActions.delete,
   createGroup: groupsActions.createGroupWithBudgetId,
-  deleteGroup: groupsActions.delete,
-  addItemsToGroup: expensesActions.update
+  deleteGroup: groupsActions.makeDeleteAndHandleChildren('expenses', expensesActions.delete),
+  updateGroup: groupsActions.update,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Expenses);

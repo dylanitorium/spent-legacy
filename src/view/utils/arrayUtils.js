@@ -11,4 +11,10 @@ export const where = name => ({
   }
 });
 
+export const by = name => (a, b) => (a[name] > b[name] ? 1 : -1);
+
+export const call = func => ({
+  with: name => ({ [name]: value }) => func(value),
+})
+
 export const pluck = property => data => data[property];

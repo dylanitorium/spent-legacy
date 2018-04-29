@@ -33,3 +33,24 @@ h6 {
 .spent-main {
   flex: 1;
 }
+
+.spent-root .ui.disabled.input {
+  opacity: 1;
+}
+
+.spent-root .ui.disabled.input input {
+  background: none;
+  border-color: transparent;
+  font-weight: 500;
+}
+
+.spent-root .ui.disabled.dropdown {
+  opacity: 1;
+  background: none;
+  border-color: transparent;
+  font-weight: 500;
+}
+
+.spent-root .ui.disabled.dropdown .icon {
+  display: none;
+}

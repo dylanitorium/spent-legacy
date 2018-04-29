@@ -30,4 +30,9 @@ export const FREQUENCY_OPTIONS = FREQUENCY.map(f => ({
   key: f,
   text: FREQUENCY_LABELS[f],
   value: f,
-}))
+}));
+
+export const ITEM_TYPES = {
+  ITEM: 'ITEM',
+  GROUP: 'GROUP',
+}

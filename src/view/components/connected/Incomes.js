@@ -1,27 +1,28 @@
 import { connect } from 'react-redux';
 import { FREQUENCY_OPTIONS } from 'state/constants';
-import { incomesFormattedSelector, makeGroupsForNamespaceSelector } from 'state/selectors';
+import {
+  groupedIncomesSelector as makeGroupedIncomesSelector,
+  activeBudgetIdSelector } from 'state/selectors';
 import { actions as incomesActions } from 'state/modules/incomes';
 import { actions as groupsActions } from 'state/modules/groups';
 
 import Incomes from 'view/components/pure/Incomes';
 
 const mapStateToProps = () => {
-  const groupsForNamespaceSelector = makeGroupsForNamespaceSelector('incomes')
-  return (state, props) => ({
-    items: incomesFormattedSelector(state),
-    itemsCount: incomesFormattedSelector(state).length,
+  const groupedIncomesSelector = makeGroupedIncomesSelector('incomes');
+  return state => ({
+    groups: groupedIncomesSelector(activeBudgetIdSelector(state))(state),
     frequencyOptions: FREQUENCY_OPTIONS,
-    groups: groupsForNamespaceSelector(state)
   });
 }
 
 const mapDispatchToProps = {
-  createItem: incomesActions.createIncomeWithBudgetId,
+  createItem: incomesActions.createExpenseWithBudgetId,
+  updateItem: incomesActions.update,
   deleteItem: incomesActions.delete,
   createGroup: groupsActions.createGroupWithBudgetId,
-  deleteGroup: groupsActions.delete,
-  addItemsToGroup: incomesActions.update
+  deleteGroup: groupsActions.makeDeleteAndHandleChildren('incomes', incomesActions.delete),
+  updateGroup: groupsActions.update,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Incomes);

@@ -1,6 +1,7 @@
 import React from 'react';
-import ItemTable from 'view/components/pure/ItemTable'
+import ItemTable from 'view/components/pure/ItemTable';
+import conditionalComponent from 'view/utils/HOC/conditionalComponent';
 
-const Incomes = props => <ItemTable {...props} title="Incomes Forecast" name="income source" namespace="incomes" />;
+const Incomes = props => <ItemTable {...props} title="Incomes Forecast" name="income" namespace="incomes" />;
 
-export default Incomes;
+export default conditionalComponent(Incomes);

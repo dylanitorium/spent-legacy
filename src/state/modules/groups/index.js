@@ -1,5 +1,7 @@
+import { where, call } from 'view/utils/arrayUtils';
 import { dataActions } from './data';
 export { dataReducer } from './data';
+
 
 export const actions = {
   ...dataActions,
@@ -18,5 +20,24 @@ export const actions = {
         budgetId: activeBudgetId,
       }));
     }
-  )
+  ),
+  makeDeleteAndHandleChildren: (childName, childDeleteAction) => (groupId) => (
+    (dispatch, getState) => {
+      dispatch(dataActions.delete(groupId));
+
+      const {
+        data: {
+          [childName]: {
+            records,
+          },
+        },
+      } = getState();
+
+      const dispatchChildDeleteAction = id => dispatch(childDeleteAction(id));
+
+      records
+        .filter(where('groupId').is(groupId))
+        .forEach(call(dispatchChildDeleteAction).with('id'));
+    }
+  ),
 };

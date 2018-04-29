@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
-import { FREQUENCY_LABELS, FREQUENCY_FACTORS } from 'state/constants';
-import { where } from 'view/utils/arrayUtils';
+import { FREQUENCY_FACTORS, ITEM_TYPES } from 'state/constants';
+import { where, by } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
@@ -11,15 +11,30 @@ const getBudgetById = (budgets, id) => budgets.find(where('id').is(id));
 
 const formatAmountable = amountable => ({
   ...amountable,
-  amount: moneyFormatter.format('USD', amountable.amount),
-  frequency: FREQUENCY_LABELS[amountable.frequency],
 });
 
-const asDropdownItem = group => ({
-  text: group.label,
-  value: group.id,
-  key: group.id,
-});
+const groupItems = (items, groups) => groups.map(group => ({
+  ...group,
+  type: ITEM_TYPES.GROUP,
+  items: items.filter(where('groupId').is(group.id)),
+}));
+
+const sumGroups = (items, groups) => {
+  const ungrouped = items.filter(where('groupId').is(null)).map(item => ({
+    ...item,
+    amount: formatMoney(item.amount),
+  }));
+
+  const grouped = groups.map(group => ({
+    ...group,
+    amount: formatMoney(reduceAmounts(items.filter(where('groupId').is(group.id)))),
+  }));
+
+  return [
+    ...grouped,
+    ...ungrouped,
+  ];
+}
 
 // Selectors
 export const dataSelector = state => state.data;
@@ -61,19 +76,24 @@ export const incomesDataSelector = createSelector(
   data => data.incomes.records,
 );
 
-export const incomesFormattedSelector = createSelector(
+export const incomesByBudgetIdSelector = budgetId => createSelector(
   [incomesDataSelector],
+  incomes => incomes.filter(where('budgetId').is(budgetId)).sort(by('createdAt'))
+);
+
+export const incomesFormattedSelector = budgetId => createSelector(
+  [incomesByBudgetIdSelector(budgetId)],
   incomes => incomes.map(formatAmountable),
 );
 
-export const makeIncomesByBudgetIdSelector = budgetId => createSelector(
-  [incomesDataSelector],
-  incomes => incomes.filter(where('budgetId').is(budgetId))
+export const incomesTotalByBudgetIdSelector = (budgetId) => createSelector(
+  [incomesByBudgetIdSelector(budgetId)],
+  reduceAmounts,
 );
 
-export const makeIncomesFormattedSelector = budgetId => createSelector(
-  [makeIncomesByBudgetIdSelector(budgetId)],
-  incomes => incomes.map(formatAmountable),
+export const incomesTotalByBudgetIdFormattedSelector = (budgetId) => createSelector(
+  [incomesTotalByBudgetIdSelector(budgetId)],
+  formatMoney,
 );
 
 export const expensesDataSelector = createSelector(
@@ -81,49 +101,23 @@ export const expensesDataSelector = createSelector(
   data => data.expenses.records,
 );
 
+export const expensesByBudgetIdSelector = budgetId => createSelector(
+  [expensesDataSelector],
+  expenses => expenses.filter(where('budgetId').is(budgetId)).sort(by('createdAt'))
+);
+
 export const expensesFormattedSelector = budgetId => createSelector(
-  [expensesDataSelector],
+  [expensesByBudgetIdSelector(budgetId)],
   expenses => expenses.map(formatAmountable),
 );
 
-export const makeExpensesByBudgetIdSelector = budgetId => createSelector(
-  [expensesDataSelector],
-  expenses => expenses.filter(where('budgetId').is(budgetId))
-);
-
-export const makeExpensesFormattedSelector = budgetId => createSelector(
-  [makeExpensesByBudgetIdSelector(budgetId)],
-  expenses => expenses.map(formatAmountable),
-);
-
-export const incomesTotalSelector = createSelector(
-  [incomesDataSelector],
+export const expensesTotalByBudgetIdSelector = (budgetId) => createSelector(
+  [expensesByBudgetIdSelector(budgetId)],
   reduceAmounts,
 );
 
-export const incomesTotalFormattedSelector = createSelector(
-  [incomesTotalSelector],
-  formatMoney,
-);
-
-export const expensesTotalSelector = createSelector(
-  [expensesDataSelector],
-  reduceAmounts,
-);
-
-export const expensesTotalFormattedSelector = createSelector(
-  [expensesTotalSelector],
-  formatMoney,
-);
-
-export const budgetBalanceSelector = createSelector(
-  incomesTotalSelector,
-  expensesTotalSelector,
-  (incomes, expenses) => incomes - expenses,
-);
-
-export const budgetBalanceFormattedSelector = createSelector(
-  [budgetBalanceSelector],
+export const expensesTotalByBudgetIdFormattedSelector = (budgetId) => createSelector(
+  [expensesTotalByBudgetIdSelector(budgetId)],
   formatMoney,
 );
 
@@ -132,16 +126,43 @@ export const groupsDataSelector = createSelector(
   data => data.groups.records,
 );
 
-export const groupsFormattedSelector = createSelector(
-  [groupsDataSelector],
-  groups => groups.map(group => ({
-    text: group.label,
-    value: group.id,
-    key: group.id,
-  }))
-);
-
-export const makeGroupsForNamespaceSelector = namespace => createSelector(
+export const groupsForNamespaceSelector = namespace => createSelector(
   [groupsDataSelector],
   (groups) => groups.filter(where('namespace').is(namespace)),
+);
+
+export const groupsByBudgetIdSelector = (namespace) => (budgetId) => createSelector(
+  [groupsForNamespaceSelector(namespace)],
+  (groups) => groups.filter(where('budgetId').is(budgetId)),
+);
+
+export const groupedIncomesSelector = (namespace) => (budgetId) => createSelector(
+  [incomesFormattedSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
+  groupItems,
+);
+
+export const groupedExpensesSelector = (namespace) => (budgetId) => createSelector(
+  [expensesFormattedSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
+  groupItems,
+);
+
+export const groupedExpensesOverviewSelector = (namespace) => (budgetId) => createSelector(
+  [expensesByBudgetIdSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
+  sumGroups,
+);
+
+export const groupedIncomesOverviewSelector = (namespace) => (budgetId) => createSelector(
+  [incomesByBudgetIdSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
+  sumGroups,
+);
+
+export const budgetBalanceByBudgetIdSelector = (budgetId) => createSelector(
+  incomesTotalByBudgetIdSelector(budgetId),
+  expensesTotalByBudgetIdSelector(budgetId),
+  (incomes, expenses) => incomes - expenses,
+);
+
+export const budgetBalanceByBudgetIdFormattedSelector = (budgetId) => createSelector(
+  [budgetBalanceByBudgetIdSelector(budgetId)],
+  formatMoney,
 );

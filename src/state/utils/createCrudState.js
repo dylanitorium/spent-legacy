@@ -56,19 +56,11 @@ const createCrudState = (name, initialState = {}) => {
     }
   };
 
-  const reducer = (state = { index: 0, records: [] }, action) => {
+  const reducer = (state = { records: [] }, action) => {
     const { type } = action;
 
     switch(type) {
       case actionTypes.CREATE:
-        return {
-          ...state,
-          index: state.index + 1,
-          records: [
-            ...state.records.filter(where('id').isNot(action.id)),
-            itemReducer(state.records.find(where('id').is(action.id)), action),
-          ],
-        };
       case actionTypes.UPDATE:
         if (Array.isArray(action.id)) {
           return {
