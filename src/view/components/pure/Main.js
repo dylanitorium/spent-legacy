@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Divider, Grid, Sticky, Menu } from 'semantic-ui-react';
+import { Grid, Menu } from 'semantic-ui-react';
 import CreateBudgetForm from 'view/components/connected/CreateBudgetForm';
 import Incomes from 'view/components/connected/Incomes';
 import Expenses from 'view/components/connected/Expenses';
@@ -13,22 +13,15 @@ class ActiveBudget extends Component {
   }
 
   state = {
-    activeTab: ActiveBudget.tabs.INCOMES,
+    activeTab: ActiveBudget.tabs.EXPENSES,
     contextRef: null,
   }
 
-  isActiveTab = (tab) => {
-    const { activeTab } = this.state;
-    return tab === activeTab;
-  }
+  isActiveTab = tab => this.state.activeTab === tab;
 
-  handleTabClick = (tab) => this.setState({ activeTab: tab });
-
-  handleContextRef = contextRef => this.setState({ contextRef })
+  handleTabClick = tab => this.setState({ activeTab: tab });
 
   render() {
-    const { contextRef } = this.state;
-
     return (
       <div>
         <Grid padded>
@@ -49,11 +42,7 @@ class ActiveBudget extends Component {
             <Expenses visible={this.isActiveTab(ActiveBudget.tabs.EXPENSES)} />
           </Grid.Column>
           <Grid.Column width={4}>
-            <div ref={this.handleContextRef}>
-              <Sticky context={contextRef}>
-                <BudgetOverview />
-              </Sticky>
-            </div>
+            <BudgetOverview />
           </Grid.Column>
         </Grid>
       </div>

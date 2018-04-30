@@ -17,4 +17,4 @@ export const call = func => ({
   with: name => ({ [name]: value }) => func(value),
 })
 
-export const pluck = property => data => data[property];
+export const select = property => data => ({ [property]: data[property] });

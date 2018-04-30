@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
 import { FREQUENCY_FACTORS, ITEM_TYPES } from 'state/constants';
-import { where, by } from 'view/utils/arrayUtils';
+import { where, by, select } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
@@ -37,6 +37,64 @@ const sumGroups = (items, groups) => {
 }
 
 // Selectors
+// New
+export const activeBudgetIdSelector = state => state.app.budgets.activeBudgetId;
+
+// Expenses
+export const expensesForGroupSelector = (state, { id: groupId }) => (
+  state.data.expenses.records.filter(where('groupId').is(groupId)).sort(by('createdAt'))
+);
+
+export const makeExpensesForGroupSelector = () => createSelector(
+  [expensesForGroupSelector],
+  expenses => expenses,
+);
+
+export const makeExpenseIdsForGroupSelector = () => createSelector(
+  [expensesForGroupSelector],
+  expenses => expenses.map(select('id')),
+);
+
+export const expenseSelector = (state, { id: itemId }) => state.data.expenses.records.find(where('id').is(itemId));
+
+export const makeExpenseSelector = () => createSelector(
+  [expenseSelector],
+  expense => expense,
+);
+
+
+// Incomes
+export const incomesForGroupSelector = (state, { id: groupId }) => (
+  state.data.incomes.records.filter(where('groupId').is(groupId)).sort(by('createdAt'))
+);
+
+export const makeIncomesForGroupSelector = () => createSelector(
+  [incomesForGroupSelector],
+  incomes => incomes,
+);
+
+export const makeIncomeIdsForGroupSelector = () => createSelector(
+  [incomesForGroupSelector],
+  incomes => incomes.map(select('id')),
+);
+
+export const incomeSelector = (state, { id: itemId }) => state.data.incomes.records.find(where('id').is(itemId));
+
+export const makeIncomeSelector = () => createSelector(
+  [incomeSelector],
+  income => income,
+);
+
+
+// Groups
+export const namespacedGroupsSelector = (state, props) => state.data.groups.records.filter(where('namespace').is(props.namespace));
+
+export const makeGroupsSelector = () => createSelector(
+  [activeBudgetIdSelector, namespacedGroupsSelector],
+  (activeBudgetId, namespacedGroups) => namespacedGroups.filter(where('budgetId').is(activeBudgetId)),
+);
+
+// Old
 export const dataSelector = state => state.data;
 
 export const appSelector = state => state.app;
@@ -49,11 +107,6 @@ export const budgetsDataSelector = createSelector(
 export const budgetsAppSelector = createSelector(
   [appSelector],
   state => state.budgets,
-);
-
-export const activeBudgetIdSelector = createSelector(
-  [budgetsAppSelector],
-  budgets => budgets.activeBudgetId
 );
 
 export const activeBudgetSelector = createSelector(

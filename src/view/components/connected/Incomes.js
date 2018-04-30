@@ -17,7 +17,7 @@ const mapStateToProps = () => {
 }
 
 const mapDispatchToProps = {
-  createItem: incomesActions.createExpenseWithBudgetId,
+  createItem: incomesActions.createIncomeWithBudgetId,
   updateItem: incomesActions.update,
   deleteItem: incomesActions.delete,
   createGroup: groupsActions.createGroupWithBudgetId,
