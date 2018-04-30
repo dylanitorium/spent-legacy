@@ -26,7 +26,7 @@ export default class Group extends Component {
   }
 
   render() {
-    const { id: groupId, itemAs: ItemComponent, label, items, name, createItem, updateGroup, deleteGroup, ...passThrough } = this.props;
+    const { id: groupId, itemsAs: ItemComponent, label, items, name, createItem, updateGroup, deleteGroup, ...passThrough } = this.props;
     const { locked } = this.state;
 
     return (
