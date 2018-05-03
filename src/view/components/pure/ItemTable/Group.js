@@ -1,9 +1,21 @@
 import React, { Component } from 'react';
-import { Table, Button, Input, Dropdown } from 'semantic-ui-react'
+import { Table, Button, Input, Dropdown, Checkbox } from 'semantic-ui-react'
+import conditionalComponent from 'view/utils/HOC/conditionalComponent';
+
+const GroupBody = conditionalComponent(({ items, itemsAs: ItemComponent }) => (
+  <Table.Body>
+    {
+      items.map(item => (
+        <ItemComponent key={item.id} {...item}  />
+      ))
+    }
+  </Table.Body>
+));
 
 export default class Group extends Component {
   state = {
-    locked: true
+    locked: true,
+    collapsed: true,
   }
 
   handleInputRef = (input) => {
@@ -16,23 +28,20 @@ export default class Group extends Component {
     }
   }
 
-  toggleLock = () => {
-    const { locked } = this.state;
-    if (locked) {
-      this.setState({ locked: false });
-    } else {
-      this.setState({ locked: true });
-    }
-  }
+  toggleLock = () => this.setState({ locked: !this.state.locked });
+  toggleCollapse = () => this.setState({ collapsed: !this.state.collapsed });
 
   render() {
-    const { id: groupId, itemsAs: ItemComponent, label, items, name, createItem, updateGroup, deleteGroup, ...passThrough } = this.props;
-    const { locked } = this.state;
+    const { id: groupId, label, name, excluded, createItem, updateGroup, deleteGroup, toggleExclude, ...passThrough } = this.props;
+    const { locked, collapsed } = this.state;
 
     return (
       <Table compact>
         <Table.Header>
           <Table.Row>
+            <Table.HeaderCell verticalAlign="middle">
+              <Checkbox checked={!excluded} onClick={() => toggleExclude(groupId)} />
+            </Table.HeaderCell>
             <Table.HeaderCell width={1} textAlign="center">
               <Button
                 basic
@@ -59,22 +68,26 @@ export default class Group extends Component {
                 onClick={() => createItem({ groupId })}
               />
             </Table.HeaderCell>
-            <Table.HeaderCell width={1}>
+            <Table.HeaderCell width={1} textAlign="center">
               <Dropdown icon='ellipsis vertical' className='icon'>
                 <Dropdown.Menu>
                   <Dropdown.Item onClick={() => deleteGroup(groupId)}>Delete</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </Table.HeaderCell>
+            <Table.HeaderCell width={1}>
+              <Button
+                basic
+                circular
+                size="mini"
+                compact
+                icon={collapsed ? "chevron down" : "chevron up"}
+                onClick={this.toggleCollapse}
+              />
+            </Table.HeaderCell>
           </Table.Row>
         </Table.Header>
-        <Table.Body>
-          {
-            items.map(item => (
-              <ItemComponent key={item.id} {...passThrough} {...item}  />
-            ))
-          }
-        </Table.Body>
+        <GroupBody {...passThrough} visible={!this.state.collapsed}/>
       </Table>
     );
   }

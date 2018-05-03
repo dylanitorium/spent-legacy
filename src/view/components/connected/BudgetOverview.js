@@ -1,25 +1,31 @@
 import { connect } from 'react-redux';
 import {
-  groupedIncomesOverviewSelector as makeGroupedIncomesOverviewSelector,
-  incomesTotalByBudgetIdFormattedSelector,
-  expensesTotalByBudgetIdFormattedSelector,
-  budgetBalanceByBudgetIdFormattedSelector,
-  groupedExpensesOverviewSelector as makeGroupedExpensesOverviewSelector,
-  activeBudgetIdSelector
+  makeIncomesOverviewSelector,
+  makeIncomesTotalSelector,
+  makeExpensesOverviewSelector,
+  makeExpensesTotalSelector,
+  makeBudgetBalanceSelector,
 } from 'state/selectors';
 
 import BudgetOverview from 'view/components/pure/BudgetOverview';
 
-const mapStateToProps = () => state => {
-  const groupedIncomesOverviewSelector = makeGroupedIncomesOverviewSelector('incomes');
-  const groupedExpensesOverviewSelector = makeGroupedExpensesOverviewSelector('expenses');
-  return {
-    incomes: groupedIncomesOverviewSelector(activeBudgetIdSelector(state))(state),
-    incomesTotal: incomesTotalByBudgetIdFormattedSelector(activeBudgetIdSelector(state))(state),
-    expenses: groupedExpensesOverviewSelector(activeBudgetIdSelector(state))(state),
-    expensesTotal: expensesTotalByBudgetIdFormattedSelector(activeBudgetIdSelector(state))(state),
-    budgetBalance: budgetBalanceByBudgetIdFormattedSelector(activeBudgetIdSelector(state))(state),
-  }
-};
+const mapStateToProps = () => {
+  const incomesOverviewSelector = makeIncomesOverviewSelector(true);
+  const incomesTotalSelector = makeIncomesTotalSelector(true);
+  const expensesOverviewSelector = makeExpensesOverviewSelector(true);
+  const expensesTotalSelector = makeExpensesTotalSelector(true);
+  const budgetBalanceSelector = makeBudgetBalanceSelector(true);
+
+  return (state, props) => {
+    return {
+      incomes: incomesOverviewSelector(state),
+      incomesTotal: incomesTotalSelector(state),
+      expenses: expensesOverviewSelector(state),
+      expensesTotal: expensesTotalSelector(state),
+      budgetBalance: budgetBalanceSelector(state),
+    }
+  };
+}
+
 
 export default connect(mapStateToProps)(BudgetOverview);

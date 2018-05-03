@@ -8,13 +8,21 @@ export const where = name => ({
     isNot: value => _value => _value !== value,
     isIn: array => _value => array.includes(_value),
     isNotIn: array => _value => !array.includes(_value)
-  }
+  },
 });
+
+export const combineQueries = (queries) => {
+  return arg => queries.map(query => query(arg)).reduce((result, queryResult) => (!result ? false : queryResult));
+}
+
 
 export const by = name => (a, b) => (a[name] > b[name] ? 1 : -1);
 
 export const call = func => ({
   with: name => ({ [name]: value }) => func(value),
+  using: injected => (...args) => func(...args, injected)
 })
 
 export const select = property => data => ({ [property]: data[property] });
+
+export const sum = name => (accumulator, { [name]: value }) => value + accumulator;

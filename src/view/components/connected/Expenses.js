@@ -1,5 +1,4 @@
 import { connect } from 'react-redux';
-import { FREQUENCY_OPTIONS } from 'state/constants';
 import { makeGroupsSelector } from 'state/selectors';
 import { actions as expensesActions } from 'state/modules/expenses';
 import { actions as groupsActions } from 'state/modules/groups';
@@ -10,7 +9,6 @@ const mapStateToProps = () => {
   const groupsSelector = makeGroupsSelector();
   return (state, props) => ({
     groups: groupsSelector(state, {...props, namespace: 'expenses' }),
-    frequencyOptions: FREQUENCY_OPTIONS,
   });
 }
 

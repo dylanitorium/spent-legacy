@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Button, Input, Select, Dropdown } from 'semantic-ui-react';
+import { Table, Button, Input, Select, Dropdown, Checkbox } from 'semantic-ui-react';
 import CurrencyInput from 'react-currency-input';
 
 export default class Item extends Component {
@@ -27,11 +27,25 @@ export default class Item extends Component {
   }
 
   render() {
-    const { id: itemId, label, frequencyOptions, amount, frequency, updateItem, deleteItem } = this.props;
+    const {
+      id: itemId,
+      label,
+      frequencyOptions,
+      amount,
+      frequency,
+      excluded,
+      groupExcluded,
+      updateItem,
+      deleteItem,
+      toggleExclude
+     } = this.props;
     const { locked } = this.state;
 
     return (
       <Table.Row>
+        <Table.Cell verticalAlign="middle">
+          <Checkbox checked={!excluded} onClick={() => toggleExclude(itemId)} disabled={groupExcluded} />
+        </Table.Cell>
         <Table.Cell width={1} textAlign="center">
           <Button
             basic
@@ -73,13 +87,14 @@ export default class Item extends Component {
             onChange={(_e, { value }) => updateItem(itemId, { frequency: value })}
           />
         </Table.Cell>
-        <Table.Cell width={1}>
+        <Table.Cell width={1} textAlign="center">
           <Dropdown icon='ellipsis vertical' className='icon'>
             <Dropdown.Menu>
               <Dropdown.Item onClick={() => deleteItem(itemId)}>Delete</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Table.Cell>
+        <Table.Cell width={1} />
       </Table.Row>
     );
   }
