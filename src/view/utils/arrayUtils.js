@@ -12,16 +12,15 @@ export const where = name => ({
 });
 
 export const combineQueries = (queries) => {
-  return arg => queries.map(query => query(arg)).reduce((result, queryResult) => (!result ? false : queryResult));
+  return arg => queries.reduce((previousResult, query) => (!query(arg) ? false : previousResult));
 }
-
 
 export const by = name => (a, b) => (a[name] > b[name] ? 1 : -1);
 
 export const call = func => ({
   with: name => ({ [name]: value }) => func(value),
-  using: injected => (...args) => func(...args, injected)
-})
+  on: name => (item) => ({ ...item, [name]: func(item[name]) }),
+});
 
 export const select = property => data => ({ [property]: data[property] });
 

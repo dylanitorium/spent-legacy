@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
 import { FREQUENCY_FACTORS } from 'state/constants';
-import { where, by, select, combineQueries } from 'view/utils/arrayUtils';
+import { where, by, select, call, combineQueries } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
@@ -22,9 +22,7 @@ const sumGroups = (items, groups) => {
     ...grouped,
     ...ungrouped,
   ];
-}
-
-const capitalizeFirstLetter = string => string.charAt(0).toUpperCase() + string.slice(1);
+};
 
 // Selectors
 export const selectIdFromProps = (state, { id }) => id;
@@ -110,56 +108,57 @@ export const itemSelectorFactory = name => {
       const filteredItems = items.filter(where('id').isNotIn(excludedItems));
 
       const sums = sumGroups(filteredItems, filteredGroups);
-      return format ? sums.map(group => ({ ...group, amount: formatMoney(group.amount) })) : sums;
-    });
+      return format ? sums.map(call(formatMoney).on('amount')) : sums;
+    }
+  );
 
-    const makeItemsTotalSelector = (format = false) => createSelector(
-      [activeBudgetIdSelector, itemsSelector, excludedItemsIdSelector, excludedGroupsIdSelector],
-      (activeBudgetId, items, excludedItems, excludedGroups) => {
-        const filteredItems = items.filter(combineQueries([
+  const makeItemsTotalSelector = (format = false) => createSelector(
+    [activeBudgetIdSelector, itemsSelector, excludedItemsIdSelector, excludedGroupsIdSelector],
+    (activeBudgetId, items, excludedItems, excludedGroups) => {
+      const filteredItems = items.filter(combineQueries([
+        where('budgetId').is(activeBudgetId),
+        where('id').isNotIn(excludedItems),
+        where('groupId').isNotIn(excludedGroups),
+      ]));
+
+      const total = reduceAmounts(filteredItems);
+      return format ? formatMoney(total) : total;
+    }
+  );
+
+  const makeGroupedItemsSelector = () => createSelector(
+    [activeBudgetIdSelector, groupsSelector, itemsSelector],
+    (activeBudgetId, groups, items) => {
+      const filteredGroups = groups.filter(combineQueries([
+        where('budgetId').is(activeBudgetId),
+        where('namespace').is(name),
+      ]));
+
+      return filteredGroups.map(group => ({
+        ...group,
+        items: items.filter(combineQueries([
           where('budgetId').is(activeBudgetId),
-          where('id').isNotIn(excludedItems),
-          where('groupId').isNotIn(excludedGroups),
-        ]));
+          where('groupId').is(group.id),
+        ])),
+      }));
+    }
+  );
 
-        const total = reduceAmounts(filteredItems);
-        return format ? formatMoney(total) : total;
-      }
-    );
+  const makeIsItemExcludedSelector = () => createSelector(
+    [excludedItemsIdSelector, selectIdFromProps],
+    (excludedItems, itemId) => excludedItems.includes(itemId)
+  );
 
-    const makeGroupedItemsSelector = () => createSelector(
-      [activeBudgetIdSelector, groupsSelector, itemsSelector],
-      (activeBudgetId, groups, items) => {
-        const filteredGroups = groups.filter(combineQueries([
-          where('budgetId').is(activeBudgetId),
-          where('namespace').is(name),
-        ]));
-
-        return filteredGroups.map(group => ({
-          ...group,
-          items: items.filter(combineQueries([
-            where('budgetId').is(activeBudgetId),
-            where('groupId').is(group.id),
-          ])),
-        }));
-      }
-    );
-
-    const makeIsItemExcludedSelector = () => createSelector(
-      [excludedItemsIdSelector, selectIdFromProps],
-      (excludedItems, itemId) => excludedItems.includes(itemId)
-    );
-
-    const makeIsGroupExcludedByItemIdSelector = () => createSelector(
-      [itemSelector, excludedGroupsIdSelector],
-      (item, excludedGroups) => excludedGroups.includes(item.groupId),
-    );
+  const makeIsGroupExcludedByItemIdSelector = () => createSelector(
+    [itemSelector, excludedGroupsIdSelector],
+    (item, excludedGroups) => excludedGroups.includes(item.groupId),
+  );
 
   return {
     itemsSelector,
-    makeItemIdsForGroupSelector,
     itemSelector,
     makeItemSelector,
+    makeItemIdsForGroupSelector,
     makeItemsOverviewSelector,
     makeItemsTotalSelector,
     makeGroupedItemsSelector,
