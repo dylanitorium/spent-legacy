@@ -14,8 +14,8 @@ const GroupBody = conditionalComponent(({ items, itemsAs: ItemComponent }) => (
 
 export default class Group extends Component {
   state = {
-    locked: true,
-    collapsed: true,
+    locked: false,
+    collapsed: false,
   }
 
   handleInputRef = (input) => {

@@ -12,7 +12,7 @@ export const appActions = {
 }
 
 const initialAppState = {
-  excludedIncomes: [],
+  excluded: [],
 };
 
 export const appReducer = (state = initialAppState, action) => {
@@ -20,16 +20,16 @@ export const appReducer = (state = initialAppState, action) => {
 
   switch (type) {
     case appActionTypes.TOGGLE_EXCLUDE_INCOME:
-      let { excludedIncomes } = state;
-      if (excludedIncomes.includes(payload.id)) {
-        excludedIncomes = excludedIncomes.filter(where().value.isNot(payload.id));
+      let { excluded } = state;
+      if (excluded.includes(payload.id)) {
+        excluded = excluded.filter(where().value.isNot(payload.id));
       } else {
-        excludedIncomes = [...excludedIncomes, payload.id];
+        excluded = [...excluded, payload.id];
       }
 
       return {
         ...state,
-        excludedIncomes,
+        excluded,
       };
     default:
       return state;

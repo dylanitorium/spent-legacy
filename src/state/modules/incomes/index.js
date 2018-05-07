@@ -7,5 +7,5 @@ export { appReducer } from './app';
 export const actions = {
   ...dataActions,
   ...appActions,
-  createIncomeWithBudgetId: makeCreateWithBudgetId(dataActions)
+  createWithBudgetId: makeCreateWithBudgetId(dataActions)
 };;

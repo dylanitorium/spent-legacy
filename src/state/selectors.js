@@ -1,21 +1,11 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
-import { FREQUENCY_FACTORS, ITEM_TYPES } from 'state/constants';
+import { FREQUENCY_FACTORS } from 'state/constants';
 import { where, by, select, combineQueries } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
 const formatMoney = amount => moneyFormatter.format('USD', amount);
-
-const formatAmountable = amountable => ({
-  ...amountable,
-});
-
-const groupItems = (items, groups) => groups.map(group => ({
-  ...group,
-  type: ITEM_TYPES.GROUP,
-  items: items.filter(where('groupId').is(group.id)),
-}));
 
 const sumGroups = (items, groups) => {
   const ungrouped = items.filter(where('groupId').is(null)).map(item => ({
@@ -34,6 +24,8 @@ const sumGroups = (items, groups) => {
   ];
 }
 
+const capitalizeFirstLetter = string => string.charAt(0).toUpperCase() + string.slice(1);
+
 // Selectors
 export const selectIdFromProps = (state, { id }) => id;
 
@@ -43,6 +35,21 @@ export const selectNamespaceFromProps = (state, { namespace }) => namespace;
 export const budgetsSelector = state => state.data.budgets.records;
 
 export const activeBudgetIdSelector = state => state.app.budgets.activeBudgetId;
+
+export const hasBudgetsSelector = createSelector(
+  [budgetsSelector],
+  budgets => budgets.length > 0,
+);
+
+export const activeBudgetSelector = createSelector(
+  [activeBudgetIdSelector, budgetsSelector],
+  (activeBudgetId, budgets) => budgets.find(where('id').is(activeBudgetId)),
+)
+
+export const activeBudgetLabelSelector = createSelector(
+  [activeBudgetSelector],
+  (activeBudget) => activeBudget ? activeBudget.label : '',
+);
 
 // Groups
 export const groupsSelector = state => state.data.groups.records;
@@ -69,274 +76,106 @@ export const makeIsGroupExcludedSelector = () => createSelector(
   excluded => excluded,
 );
 
+export const itemSelectorFactory = name => {
+  const itemsSelector = state => state.data[name].records;
 
-// Expenses
-export const expensesSelector = state => state.data.expenses.records;
+  const itemsForGroupSelector = createSelector(
+    [itemsSelector, selectIdFromProps],
+    (items, groupId) => items.filter(where('groupId').is(groupId)).sort(by('createdAt'))
+  );
 
-export const expensesForGroupSelector = (state, { id: groupId }) => (
-  state.data.expenses.records.filter(where('groupId').is(groupId)).sort(by('createdAt'))
-);
+  const makeItemIdsForGroupSelector = () => createSelector(
+    [itemsForGroupSelector],
+    items => items.map(select('id')),
+  );
 
-export const makeExpensesForGroupSelector = () => createSelector(
-  [expensesForGroupSelector],
-  expenses => expenses,
-);
+  const itemSelector = createSelector(
+    [itemsSelector, selectIdFromProps],
+    (items, itemId) => items.find(where('id').is(itemId))
+  );
 
-export const makeExpenseIdsForGroupSelector = () => createSelector(
-  [expensesForGroupSelector],
-  expenses => expenses.map(select('id')),
-);
+  const makeItemSelector = () => itemSelector;
 
-export const expenseSelector = (state, { id: itemId }) => state.data.expenses.records.find(where('id').is(itemId));
+  const excludedItemsIdSelector = state => state.app[name].excluded;
 
-export const makeExpenseSelector = () => createSelector(
-  [expenseSelector],
-  expense => expense,
-);
+  const makeItemsOverviewSelector = (format = false) => createSelector(
+    [activeBudgetIdSelector, itemsSelector, groupsSelector, excludedGroupsIdSelector, excludedItemsIdSelector],
+    (activeBudgetId, items, groups, excludedGroups, excludedItems) => {
+      const filteredGroups = groups.filter(combineQueries([
+        where('namespace').is(name),
+        where('budgetId').is(activeBudgetId),
+        where('id').isNotIn(excludedGroups),
+      ]));
 
-export const isExpenseExcludedSelector = (state, { id: itemId }) => state.app.expenses.excludedExpenses.includes(itemId);
+      const filteredItems = items.filter(where('id').isNotIn(excludedItems));
 
-export const makeIsExpenseExcludedSelector = () => createSelector(
-  [isExpenseExcludedSelector],
-  excluded => excluded,
-);
+      const sums = sumGroups(filteredItems, filteredGroups);
+      return format ? sums.map(group => ({ ...group, amount: formatMoney(group.amount) })) : sums;
+    });
 
-export const excludedExpensesIdSelector = state => state.app.expenses.excludedExpenses;
+    const makeItemsTotalSelector = (format = false) => createSelector(
+      [activeBudgetIdSelector, itemsSelector, excludedItemsIdSelector, excludedGroupsIdSelector],
+      (activeBudgetId, items, excludedItems, excludedGroups) => {
+        const filteredItems = items.filter(combineQueries([
+          where('budgetId').is(activeBudgetId),
+          where('id').isNotIn(excludedItems),
+          where('groupId').isNotIn(excludedGroups),
+        ]));
 
-export const makeExpensesOverviewSelector = (format = false) => createSelector(
-  [activeBudgetIdSelector, expensesSelector, groupsSelector, excludedGroupsIdSelector, excludedExpensesIdSelector],
-  (activeBudgetId, expenses, groups, excludedGroups, excludedExpenses) => {
-    const filteredGroups = groups.filter(combineQueries([
-      where('namespace').is('expenses'),
-      where('budgetId').is(activeBudgetId),
-      where('id').isNotIn(excludedGroups),
-    ]));
+        const total = reduceAmounts(filteredItems);
+        return format ? formatMoney(total) : total;
+      }
+    );
 
-    const filteredExpenses = expenses.filter(where('id').isNotIn(excludedExpenses));
+    const makeGroupedItemsSelector = () => createSelector(
+      [activeBudgetIdSelector, groupsSelector, itemsSelector],
+      (activeBudgetId, groups, items) => {
+        const filteredGroups = groups.filter(combineQueries([
+          where('budgetId').is(activeBudgetId),
+          where('namespace').is(name),
+        ]));
 
-    const sums = sumGroups(filteredExpenses, filteredGroups);
-    return format ? sums.map(group => ({ ...group, amount: formatMoney(group.amount) })) : sums;
-  }
-);
+        return filteredGroups.map(group => ({
+          ...group,
+          items: items.filter(combineQueries([
+            where('budgetId').is(activeBudgetId),
+            where('groupId').is(group.id),
+          ])),
+        }));
+      }
+    );
 
-export const makeExpensesTotalSelector = (format = false) => createSelector(
-  [activeBudgetIdSelector, expensesSelector, excludedExpensesIdSelector, excludedGroupsIdSelector],
-  (activeBudgetId, expenses, excludedExpenses, excludedGroups) => {
-    const filteredExpenses = expenses.filter(combineQueries([
-      where('budgetId').is(activeBudgetId),
-      where('id').isNotIn(excludedExpenses),
-      where('groupId').isNotIn(excludedGroups),
-    ]));
-    const total = reduceAmounts(filteredExpenses);
-    return format ? formatMoney(total) : total;
-  }
-);
+    const makeIsItemExcludedSelector = () => createSelector(
+      [excludedItemsIdSelector, selectIdFromProps],
+      (excludedItems, itemId) => excludedItems.includes(itemId)
+    );
 
-export const isGroupExcludedByExpenseIdSelector = createSelector(
-  [expensesSelector, excludedGroupsIdSelector, selectIdFromProps],
-  (expenses, excludedGroups, itemId) => {
-    const { groupId } = expenses.find(where('id').is(itemId));
-    return excludedGroups.includes(groupId);
-  }
-)
+    const makeIsGroupExcludedByItemIdSelector = () => createSelector(
+      [itemSelector, excludedGroupsIdSelector],
+      (item, excludedGroups) => excludedGroups.includes(item.groupId),
+    );
 
-export const makeIsGroupExcludedByExpenseIdSelector = () => createSelector(
-  [isGroupExcludedByExpenseIdSelector],
-  excluded => excluded,
-);
+  return {
+    itemsSelector,
+    makeItemIdsForGroupSelector,
+    itemSelector,
+    makeItemSelector,
+    makeItemsOverviewSelector,
+    makeItemsTotalSelector,
+    makeGroupedItemsSelector,
+    makeIsItemExcludedSelector,
+    makeIsGroupExcludedByItemIdSelector
+  };
+}
 
-// Incomes
-export const incomesSelector = state => state.data.incomes.records;
-
-export const incomesForGroupSelector = createSelector(
-  [incomesSelector, selectIdFromProps],
-  (incomes, groupId) => incomes.filter(where('groupId').is(groupId)).sort(by('createdAt'))
-)
-
-export const makeIncomesForGroupSelector = () => createSelector(
-  [incomesForGroupSelector],
-  incomes => incomes,
-);
-
-export const makeIncomeIdsForGroupSelector = () => createSelector(
-  [incomesForGroupSelector],
-  incomes => incomes.map(select('id')),
-);
-
-export const incomeSelector = createSelector(
-  [incomesSelector, selectIdFromProps],
-  (incomes, itemId) => incomes.find(where('id').is(itemId)),
-);
-
-export const makeIncomeSelector = () => createSelector(
-  [incomeSelector],
-  income => income,
-);
-
-export const excludedIncomesIdSelector = state => state.app.incomes.excludedIncomes;
-
-export const makeIncomesOverviewSelector = (format = false) => createSelector(
-  [activeBudgetIdSelector, incomesSelector, groupsSelector, excludedGroupsIdSelector, excludedIncomesIdSelector],
-  (activeBudgetId, incomes, groups, excludedGroups, excludedIncomes) => {
-    const filteredGroups = groups.filter(combineQueries([
-      where('namespace').is('incomes'),
-      where('budgetId').is(activeBudgetId),
-      where('id').isNotIn(excludedGroups),
-    ]));
-
-    const filteredIncomes = incomes.filter(where('is').isNotIn(excludedIncomes));
-
-    const sums = sumGroups(filteredIncomes, filteredGroups);
-    return format ? sums.map(group => ({ ...group, amount: formatMoney(group.amount) })) : sums;
-  }
-);
-
-export const makeIncomesTotalSelector = (format = false) => createSelector(
-  [activeBudgetIdSelector, incomesSelector, excludedIncomesIdSelector, excludedGroupsIdSelector],
-  (activeBudgetId, incomes, excludedIncomes, excludedGroups) => {
-    const filteredIncomes = incomes.filter(combineQueries([
-      where('budgetId').is(activeBudgetId),
-      where('id').isNotIn(excludedIncomes),
-      where('groupId').isNotIn(excludedGroups),
-    ]));
-
-    const total = reduceAmounts(filteredIncomes);
-    return format ? formatMoney(total) : total;
-  }
-);
+export const incomeSelectors = itemSelectorFactory('incomes');
+export const expenseSelectors = itemSelectorFactory('expenses');
 
 // Combined
 export const makeBudgetBalanceSelector = (format = false) => createSelector(
-  [makeIncomesTotalSelector(), makeExpensesTotalSelector()],
+  [incomeSelectors.makeItemsTotalSelector(), expenseSelectors.makeItemsTotalSelector()],
   (income, expenses) => {
     const balance = income - expenses;
     return format ? formatMoney(balance) : balance;
   }
-);
-
-
-// Old
-export const dataSelector = state => state.data;
-
-export const appSelector = state => state.app;
-
-export const budgetsDataSelector = createSelector(
-  [dataSelector],
-  data => data.budgets.records,
-);
-
-export const budgetsAppSelector = createSelector(
-  [appSelector],
-  state => state.budgets,
-);
-
-export const activeBudgetSelector = createSelector(
-  [budgetsDataSelector, activeBudgetIdSelector],
-  (budgets, id) => budgets.find(where('id').is(id)),
-);
-
-export const activeBudgetLabelSelector = createSelector(
-  [activeBudgetSelector],
-  budget => (budget ? budget.label : undefined),
-);
-
-export const hasBudgetsSelector = createSelector(
-  [budgetsDataSelector],
-  budgets => budgets.length > 0,
-);
-
-export const incomesDataSelector = createSelector(
-  [dataSelector],
-  data => data.incomes.records,
-);
-
-export const incomesByBudgetIdSelector = budgetId => createSelector(
-  [incomesDataSelector],
-  incomes => incomes.filter(where('budgetId').is(budgetId)).sort(by('createdAt'))
-);
-
-export const incomesFormattedSelector = budgetId => createSelector(
-  [incomesByBudgetIdSelector(budgetId)],
-  incomes => incomes.map(formatAmountable),
-);
-
-export const incomesTotalByBudgetIdSelector = (budgetId) => createSelector(
-  [incomesByBudgetIdSelector(budgetId)],
-  reduceAmounts,
-);
-
-export const incomesTotalByBudgetIdFormattedSelector = (budgetId) => createSelector(
-  [incomesTotalByBudgetIdSelector(budgetId)],
-  formatMoney,
-);
-
-export const expensesDataSelector = createSelector(
-  [dataSelector],
-  data => data.expenses.records,
-);
-
-export const expensesByBudgetIdSelector = budgetId => createSelector(
-  [expensesDataSelector],
-  expenses => expenses.filter(where('budgetId').is(budgetId)).sort(by('createdAt'))
-);
-
-export const expensesFormattedSelector = budgetId => createSelector(
-  [expensesByBudgetIdSelector(budgetId)],
-  expenses => expenses.map(formatAmountable),
-);
-
-export const expensesTotalByBudgetIdSelector = (budgetId) => createSelector(
-  [expensesByBudgetIdSelector(budgetId)],
-  reduceAmounts,
-);
-
-export const expensesTotalByBudgetIdFormattedSelector = (budgetId) => createSelector(
-  [expensesTotalByBudgetIdSelector(budgetId)],
-  formatMoney,
-);
-
-export const groupsDataSelector = createSelector(
-  [dataSelector],
-  data => data.groups.records,
-);
-
-export const groupsForNamespaceSelector = namespace => createSelector(
-  [groupsDataSelector],
-  (groups) => groups.filter(where('namespace').is(namespace)),
-);
-
-export const groupsByBudgetIdSelector = (namespace) => (budgetId) => createSelector(
-  [groupsForNamespaceSelector(namespace)],
-  (groups) => groups.filter(where('budgetId').is(budgetId)),
-);
-
-export const groupedIncomesSelector = (namespace) => (budgetId) => createSelector(
-  [incomesFormattedSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
-  groupItems,
-);
-
-export const groupedExpensesSelector = (namespace) => (budgetId) => createSelector(
-  [expensesFormattedSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
-  groupItems,
-);
-
-export const groupedExpensesOverviewSelector = (namespace) => (budgetId) => createSelector(
-  [expensesByBudgetIdSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
-  sumGroups,
-);
-
-export const groupedIncomesOverviewSelector = (namespace) => (budgetId) => createSelector(
-  [incomesByBudgetIdSelector(budgetId), groupsByBudgetIdSelector(namespace)(budgetId)],
-  sumGroups,
-);
-
-export const budgetBalanceByBudgetIdSelector = (budgetId) => createSelector(
-  incomesTotalByBudgetIdSelector(budgetId),
-  expensesTotalByBudgetIdSelector(budgetId),
-  (incomes, expenses) => incomes - expenses,
-);
-
-export const budgetBalanceByBudgetIdFormattedSelector = (budgetId) => createSelector(
-  [budgetBalanceByBudgetIdSelector(budgetId)],
-  formatMoney,
 );

@@ -1,19 +1,17 @@
 import { connect } from 'react-redux';
 import {
-  makeIncomeSelector,
-  makeIsExpenseExcludedSelector,
-  makeIsGroupExcludedByExpenseIdSelector,
+  incomeSelectors,
 } from 'state/selectors';
 import Item from 'view/components/pure/ItemTable/Item';
 import { actions as incomesActions } from 'state/modules/incomes';
 import { FREQUENCY_OPTIONS } from 'state/constants';
 
 const mapStateToProps = () => {
-  const incomeSelector = makeIncomeSelector();
-  const isIncomeExcludedSelector = makeIsExpenseExcludedSelector();
-  const isGroupExcludedByIncomeIdSelector = makeIsGroupExcludedByExpenseIdSelector();
+  const itemSelector = incomeSelectors.makeItemSelector();
+  const isIncomeExcludedSelector = incomeSelectors.makeIsItemExcludedSelector();
+  const isGroupExcludedByIncomeIdSelector = incomeSelectors.makeIsGroupExcludedByItemIdSelector();
   return (state, props) => ({
-    ...incomeSelector(state, props),
+    ...itemSelector(state, props),
     excluded: isIncomeExcludedSelector(state, props),
     groupExcluded: isGroupExcludedByIncomeIdSelector(state, props),
     frequencyOptions: FREQUENCY_OPTIONS,

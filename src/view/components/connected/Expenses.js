@@ -1,14 +1,14 @@
 import { connect } from 'react-redux';
-import { makeGroupsSelector } from 'state/selectors';
+import { expenseSelectors } from 'state/selectors';
 import { actions as expensesActions } from 'state/modules/expenses';
 import { actions as groupsActions } from 'state/modules/groups';
 
 import Expenses from 'view/components/pure/Expenses';
 
 const mapStateToProps = () => {
-  const groupsSelector = makeGroupsSelector();
+  const groupeditemsSelector = expenseSelectors.makeGroupedItemsSelector();
   return (state, props) => ({
-    groups: groupsSelector(state, {...props, namespace: 'expenses' }),
+    groups: groupeditemsSelector(state, {...props, namespace: 'expenses' }),
   });
 }
 

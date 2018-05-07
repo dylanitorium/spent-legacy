@@ -1,23 +1,21 @@
 import { connect } from 'react-redux';
 import { FREQUENCY_OPTIONS } from 'state/constants';
-import {
-  groupedIncomesSelector as makeGroupedIncomesSelector,
-  activeBudgetIdSelector } from 'state/selectors';
+import { incomeSelectors } from 'state/selectors';
 import { actions as incomesActions } from 'state/modules/incomes';
 import { actions as groupsActions } from 'state/modules/groups';
 
 import Incomes from 'view/components/pure/Incomes';
 
 const mapStateToProps = () => {
-  const groupedIncomesSelector = makeGroupedIncomesSelector('incomes');
-  return state => ({
-    groups: groupedIncomesSelector(activeBudgetIdSelector(state))(state),
+  const groupeditemsSelector = incomeSelectors.makeGroupedItemsSelector();
+  return (state, props) => ({
+    groups: groupeditemsSelector(state, { ...props, namespace: 'incomes' }),
     frequencyOptions: FREQUENCY_OPTIONS,
   });
 }
 
 const mapDispatchToProps = {
-  createItem: incomesActions.createIncomeWithBudgetId,
+  createItem: incomesActions.createWithBudgetId,
   updateItem: incomesActions.update,
   deleteItem: incomesActions.delete,
   createGroup: groupsActions.createGroupWithBudgetId,

@@ -1,20 +1,16 @@
 import { connect } from 'react-redux';
-import {
-  makeExpenseSelector,
-  makeIsExpenseExcludedSelector,
-  makeIsGroupExcludedByExpenseIdSelector
-} from 'state/selectors';
+import { expenseSelectors } from 'state/selectors';
 import Item from 'view/components/pure/ItemTable/Item';
 import { actions as expensesActions } from 'state/modules/expenses';
 import { FREQUENCY_OPTIONS } from 'state/constants';
 
 const mapStateToProps = () => {
-  const expenseSelector = makeExpenseSelector();
-  const isExpenseExcludedSelector = makeIsExpenseExcludedSelector();
-  const isGroupExcludedByExpenseIdSelector =  makeIsGroupExcludedByExpenseIdSelector();
+  const itemSelector = expenseSelectors.makeItemSelector();
+  const isExpenseExcludedSelector = expenseSelectors.makeIsItemExcludedSelector();
+  const isGroupExcludedByExpenseIdSelector =  expenseSelectors.makeIsGroupExcludedByItemIdSelector();
   return (state, props) => {
     return {
-      ...expenseSelector(state, props),
+      ...itemSelector(state, props),
       excluded: isExpenseExcludedSelector(state, props),
       groupExcluded: isGroupExcludedByExpenseIdSelector(state, props),
       frequencyOptions: FREQUENCY_OPTIONS,

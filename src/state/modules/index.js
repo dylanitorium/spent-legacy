@@ -1,24 +1,27 @@
 import { combineReducers } from 'redux';
 import { dataReducer as budgetsData, appReducer as budgetsApp } from 'state/modules/budgets';
 import { dataReducer as incomesData, appReducer as incomesApp } from 'state/modules/incomes';
-import { dataReducer as categoriesData, appReducer as categoriesApp } from 'state/modules/categories';
 import { dataReducer as groupsData, appReducer as groupsApp } from 'state/modules/groups';
 import { dataReducer as expensesData, appReducer as expensesApp } from 'state/modules/expenses';
+import { dataReducer as incomeEventsData, appReducer as incomeEventsApp } from 'state/modules/groups';
+import { dataReducer as expenseEventsData, appReducer as expenseEventsApp } from 'state/modules/expenses';
 
 const data = combineReducers({
   budgets: budgetsData,
-  categories: categoriesData,
   groups: groupsData,
   expenses: expensesData,
   incomes: incomesData,
+  incomeEvents: incomeEventsData,
+  expenseEvents: expenseEventsData,
 });
 
 const app = combineReducers({
   budgets: budgetsApp,
   incomes: incomesApp,
-  // categories: categoriesApp,
   groups: groupsApp,
   expenses: expensesApp,
+  incomeEvents: incomeEventsApp,
+  expenseEvents: expenseEventsApp,
 });
 
 

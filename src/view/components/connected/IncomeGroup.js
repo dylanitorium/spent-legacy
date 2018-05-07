@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import {
-  makeIncomeIdsForGroupSelector,
+  incomeSelectors,
   makeIsGroupExcludedSelector,
 } from 'state/selectors';
 import Group from 'view/components/pure/ItemTable/Group';
@@ -8,7 +8,7 @@ import { actions as groupsActions } from 'state/modules/groups';
 import { actions as incomesActions } from 'state/modules/incomes';
 
 const mapStateToProps = () => {
-  const incomeIdsForGroupSelector = makeIncomeIdsForGroupSelector();
+  const incomeIdsForGroupSelector = incomeSelectors.makeItemIdsForGroupSelector();
   const isGroupExcludedSelector = makeIsGroupExcludedSelector();
   return (state, props) => ({
     excluded: isGroupExcludedSelector(state, props),
@@ -17,7 +17,7 @@ const mapStateToProps = () => {
 }
 
 const mapDispatchToProps = {
-  createItem: incomesActions.createIncomeWithBudgetId,
+  createItem: incomesActions.createWithBudgetId,
   updateGroup: groupsActions.update,
   deleteGroup: groupsActions.delete,
   toggleExclude: groupsActions.toggleExcludeGroup,

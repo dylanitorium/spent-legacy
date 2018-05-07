@@ -12,11 +12,14 @@ export default class GroupsList extends Component {
       );
     }
 
+    console.log(groups);
+
     return (
+
       <div>
         {
           groups.map(group => (
-            <GroupComponent {...passThrough} key={group.id} {...group} />
+            <GroupComponent key={group.id} {...passThrough} {...group} />
           ))
         }
       </div>
