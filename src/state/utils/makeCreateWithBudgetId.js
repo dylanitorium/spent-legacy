@@ -1,4 +1,4 @@
-const makeCreateAmountableWithBudgetId = (actions) => data => (
+const makeCreateWithBudgetId = (actions) => data => (
   (dispatch, getState) => {
     const {
       app: {
@@ -15,4 +15,4 @@ const makeCreateAmountableWithBudgetId = (actions) => data => (
   }
 );
 
-export default makeCreateAmountableWithBudgetId;
+export default makeCreateWithBudgetId;

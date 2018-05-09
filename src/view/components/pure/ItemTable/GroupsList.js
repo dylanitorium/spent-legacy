@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Table } from 'semantic-ui-react';
 
 export default class GroupsList extends Component {
   render() {
@@ -6,13 +7,17 @@ export default class GroupsList extends Component {
 
     if (!groups.length) {
       return (
-        <div>
-          Add a group by clicking the button to the top right.
-        </div>
+        <Table>
+          <Table.Body>
+            <Table.Row>
+              <Table.Cell>
+                You have not added any groups yet
+              </Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table>
       );
     }
-
-    console.log(groups);
 
     return (
 

@@ -50,29 +50,40 @@ export const activeBudgetLabelSelector = createSelector(
 );
 
 // Groups
-export const groupsSelector = state => state.data.groups.records;
+export const groupSelectors = (() => {
+  const groupsSelector = state => state.data.groups.records;
 
-export const excludedGroupsIdSelector = state => state.app.groups.excludedGroups;
+  const excludedGroupsIdSelector = state => state.app.groups.excludedGroups;
 
-export const namespacedGroupsSelector = createSelector(
-  [groupsSelector, selectNamespaceFromProps],
-  (groups, namespace) => groups.filter(where('namespace').is(namespace)),
-);
+  const namespacedGroupsSelector = createSelector(
+    [groupsSelector, selectNamespaceFromProps],
+    (groups, namespace) => groups.filter(where('namespace').is(namespace)),
+  );
 
-export const makeGroupsSelector = () => createSelector(
-  [activeBudgetIdSelector, namespacedGroupsSelector],
-  (activeBudgetId, namespacedGroups) => namespacedGroups.filter(where('budgetId').is(activeBudgetId)),
-);
+  const makeGroupsSelector = () => createSelector(
+    [activeBudgetIdSelector, namespacedGroupsSelector],
+    (activeBudgetId, namespacedGroups) => namespacedGroups.filter(where('budgetId').is(activeBudgetId)),
+  );
 
-export const isGroupExcludedSelector = createSelector(
-  [excludedGroupsIdSelector, selectIdFromProps],
-  (excludedGroups, groupId) => excludedGroups.includes(groupId),
-);
+  const isGroupExcludedSelector = createSelector(
+    [excludedGroupsIdSelector, selectIdFromProps],
+    (excludedGroups, groupId) => excludedGroups.includes(groupId),
+  );
 
-export const makeIsGroupExcludedSelector = () => createSelector(
-  [isGroupExcludedSelector],
-  excluded => excluded,
-);
+  const makeIsGroupExcludedSelector = () => createSelector(
+    [isGroupExcludedSelector],
+    excluded => excluded,
+  );
+
+  return {
+    groupsSelector,
+    excludedGroupsIdSelector,
+    namespacedGroupsSelector,
+    makeGroupsSelector,
+    isGroupExcludedSelector,
+    makeIsGroupExcludedSelector,
+  }
+})();
 
 export const itemSelectorFactory = name => {
   const itemsSelector = state => state.data[name].records;
@@ -97,7 +108,7 @@ export const itemSelectorFactory = name => {
   const excludedItemsIdSelector = state => state.app[name].excluded;
 
   const makeItemsOverviewSelector = (format = false) => createSelector(
-    [activeBudgetIdSelector, itemsSelector, groupsSelector, excludedGroupsIdSelector, excludedItemsIdSelector],
+    [activeBudgetIdSelector, itemsSelector, groupSelectors.groupsSelector, groupSelectors.excludedGroupsIdSelector, excludedItemsIdSelector],
     (activeBudgetId, items, groups, excludedGroups, excludedItems) => {
       const filteredGroups = groups.filter(combineQueries([
         where('namespace').is(name),
@@ -113,7 +124,7 @@ export const itemSelectorFactory = name => {
   );
 
   const makeItemsTotalSelector = (format = false) => createSelector(
-    [activeBudgetIdSelector, itemsSelector, excludedItemsIdSelector, excludedGroupsIdSelector],
+    [activeBudgetIdSelector, itemsSelector, excludedItemsIdSelector, groupSelectors.excludedGroupsIdSelector],
     (activeBudgetId, items, excludedItems, excludedGroups) => {
       const filteredItems = items.filter(combineQueries([
         where('budgetId').is(activeBudgetId),
@@ -127,12 +138,13 @@ export const itemSelectorFactory = name => {
   );
 
   const makeGroupedItemsSelector = () => createSelector(
-    [activeBudgetIdSelector, groupsSelector, itemsSelector],
+    [activeBudgetIdSelector, groupSelectors.groupsSelector, itemsSelector],
     (activeBudgetId, groups, items) => {
       const filteredGroups = groups.filter(combineQueries([
         where('budgetId').is(activeBudgetId),
         where('namespace').is(name),
       ]));
+
 
       return filteredGroups.map(group => ({
         ...group,
@@ -150,8 +162,13 @@ export const itemSelectorFactory = name => {
   );
 
   const makeIsGroupExcludedByItemIdSelector = () => createSelector(
-    [itemSelector, excludedGroupsIdSelector],
+    [itemSelector, groupSelectors.excludedGroupsIdSelector],
     (item, excludedGroups) => excludedGroups.includes(item.groupId),
+  );
+
+  const itemMapSelector = createSelector(
+    [itemsSelector],
+    items => items.map(({ id: value, label: text  }) => ({ text, value })),
   );
 
   return {
@@ -163,12 +180,33 @@ export const itemSelectorFactory = name => {
     makeItemsTotalSelector,
     makeGroupedItemsSelector,
     makeIsItemExcludedSelector,
-    makeIsGroupExcludedByItemIdSelector
+    makeIsGroupExcludedByItemIdSelector,
+    itemMapSelector
   };
 }
 
 export const incomeSelectors = itemSelectorFactory('incomes');
 export const expenseSelectors = itemSelectorFactory('expenses');
+
+const itemEventSelectorFactory = (name) => {
+  const itemEventsSelector = state => state.data[name].records;
+
+  const itemEventSelector = createSelector(
+    [itemEventsSelector, selectIdFromProps],
+    (items, itemId) => items.find(where('id').is(itemId))
+  );
+
+  const makeItemEventSelector = () => itemEventSelector;
+
+  return {
+    itemEventsSelector,
+    itemEventSelector,
+    makeItemEventSelector,
+  };
+};
+
+export const incomeEventSelectors = itemEventSelectorFactory('incomeEvents');
+export const expenseEventSelectors = itemEventSelectorFactory('expenseEvents');
 
 // Combined
 export const makeBudgetBalanceSelector = (format = false) => createSelector(

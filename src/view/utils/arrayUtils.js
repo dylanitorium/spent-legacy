@@ -11,9 +11,9 @@ export const where = name => ({
   },
 });
 
-export const combineQueries = (queries) => {
-  return arg => queries.reduce((previousResult, query) => (!query(arg) ? false : previousResult));
-}
+export const combineQueries = (queries) => (
+  arg => queries.reduce((previousResult, query) => (query(arg) && previousResult), true)
+);
 
 export const by = name => (a, b) => (a[name] > b[name] ? 1 : -1);
 

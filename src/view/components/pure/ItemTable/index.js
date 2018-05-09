@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import { Button, Header } from 'semantic-ui-react';
 import GroupsList from './GroupsList';
+import Flexed from 'view/components/pure/Flexed';
 
-const Flexed = ({ children, style }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', ...style }}>
-    {children}
-  </div>
-)
 
 class TitleSection extends Component {
   render() {

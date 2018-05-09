@@ -6,6 +6,7 @@ const initialState = {
   expenseId: null,
   amount: 0,
   date: '',
+  reconciled: false,
 };
 
 export const { actions: dataActions, reducer: dataReducer } = createCrudState('expenseEvents', initialState);

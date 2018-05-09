@@ -3,8 +3,8 @@ import { dataReducer as budgetsData, appReducer as budgetsApp } from 'state/modu
 import { dataReducer as incomesData, appReducer as incomesApp } from 'state/modules/incomes';
 import { dataReducer as groupsData, appReducer as groupsApp } from 'state/modules/groups';
 import { dataReducer as expensesData, appReducer as expensesApp } from 'state/modules/expenses';
-import { dataReducer as incomeEventsData, appReducer as incomeEventsApp } from 'state/modules/groups';
-import { dataReducer as expenseEventsData, appReducer as expenseEventsApp } from 'state/modules/expenses';
+import { dataReducer as incomeEventsData, appReducer as incomeEventsApp } from 'state/modules/incomeEvents';
+import { dataReducer as expenseEventsData, appReducer as expenseEventsApp } from 'state/modules/expenseEvents';
 
 const data = combineReducers({
   budgets: budgetsData,
