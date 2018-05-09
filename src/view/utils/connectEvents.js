@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 const connectEvents = (selectors, actions, Component) => {
   const mapStateToProps = () => {
     return (state, props) => ({
-      items: selectors.itemEventsSelector(state, props),
+      reconciledItems: selectors.reconciledItemsEventsSelector(state, props),
+      unreconciledItems: selectors.unreconciledItemsEventsSelector(state, props),
     });
   };
 

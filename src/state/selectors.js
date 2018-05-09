@@ -24,6 +24,8 @@ const sumGroups = (items, groups) => {
   ];
 };
 
+const adjustToFrequency = frequency => amount => amount / FREQUENCY_FACTORS[frequency];
+
 // Selectors
 export const selectIdFromProps = (state, { id }) => id;
 
@@ -48,6 +50,8 @@ export const activeBudgetLabelSelector = createSelector(
   [activeBudgetSelector],
   (activeBudget) => activeBudget ? activeBudget.label : '',
 );
+
+export const budgetOverviewFrequencySelector = state => state.app.budgets.overviewFrequency;
 
 // Groups
 export const groupSelectors = (() => {
@@ -108,8 +112,15 @@ export const itemSelectorFactory = name => {
   const excludedItemsIdSelector = state => state.app[name].excluded;
 
   const makeItemsOverviewSelector = (format = false) => createSelector(
-    [activeBudgetIdSelector, itemsSelector, groupSelectors.groupsSelector, groupSelectors.excludedGroupsIdSelector, excludedItemsIdSelector],
-    (activeBudgetId, items, groups, excludedGroups, excludedItems) => {
+    [
+      activeBudgetIdSelector,
+      itemsSelector,
+      groupSelectors.groupsSelector,
+      groupSelectors.excludedGroupsIdSelector,
+      excludedItemsIdSelector,
+      budgetOverviewFrequencySelector,
+    ],
+    (activeBudgetId, items, groups, excludedGroups, excludedItems, frequency) => {
       const filteredGroups = groups.filter(combineQueries([
         where('namespace').is(name),
         where('budgetId').is(activeBudgetId),
@@ -118,21 +129,29 @@ export const itemSelectorFactory = name => {
 
       const filteredItems = items.filter(where('id').isNotIn(excludedItems));
 
-      const sums = sumGroups(filteredItems, filteredGroups);
+      let sums = sumGroups(filteredItems, filteredGroups);
+      sums = sums.map(call(adjustToFrequency(frequency)).on('amount'));
       return format ? sums.map(call(formatMoney).on('amount')) : sums;
     }
   );
 
   const makeItemsTotalSelector = (format = false) => createSelector(
-    [activeBudgetIdSelector, itemsSelector, excludedItemsIdSelector, groupSelectors.excludedGroupsIdSelector],
-    (activeBudgetId, items, excludedItems, excludedGroups) => {
+    [
+      activeBudgetIdSelector,
+      itemsSelector,
+      excludedItemsIdSelector,
+      groupSelectors.excludedGroupsIdSelector,
+      budgetOverviewFrequencySelector
+    ],
+    (activeBudgetId, items, excludedItems, excludedGroups, frequency) => {
       const filteredItems = items.filter(combineQueries([
         where('budgetId').is(activeBudgetId),
         where('id').isNotIn(excludedItems),
         where('groupId').isNotIn(excludedGroups),
       ]));
 
-      const total = reduceAmounts(filteredItems);
+      let total = reduceAmounts(filteredItems);
+      total = adjustToFrequency(frequency)(total)
       return format ? formatMoney(total) : total;
     }
   );
@@ -191,6 +210,16 @@ export const expenseSelectors = itemSelectorFactory('expenses');
 const itemEventSelectorFactory = (name) => {
   const itemEventsSelector = state => state.data[name].records;
 
+  const reconciledItemsEventsSelector = createSelector(
+    [itemEventsSelector],
+    items => items.filter(where('reconciled').is(true))
+  );
+
+  const unreconciledItemsEventsSelector = createSelector(
+    [itemEventsSelector],
+    items => items.filter(where('reconciled').isNot(true))
+  );
+
   const itemEventSelector = createSelector(
     [itemEventsSelector, selectIdFromProps],
     (items, itemId) => items.find(where('id').is(itemId))
@@ -198,10 +227,14 @@ const itemEventSelectorFactory = (name) => {
 
   const makeItemEventSelector = () => itemEventSelector;
 
+
+
   return {
     itemEventsSelector,
     itemEventSelector,
     makeItemEventSelector,
+    reconciledItemsEventsSelector,
+    unreconciledItemsEventsSelector,
   };
 };
 

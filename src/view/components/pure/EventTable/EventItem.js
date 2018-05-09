@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Table, Input, Select, Dropdown } from 'semantic-ui-react';
 import CurrencyInput from 'react-currency-input';
+import moment from 'moment';
 
 export default class EventItem extends Component {
 
@@ -16,6 +17,7 @@ export default class EventItem extends Component {
       itemId,
       label,
       amount,
+      date,
       reconciled,
       itemOptions,
       updateItem,
@@ -51,7 +53,10 @@ export default class EventItem extends Component {
           <Input
             fluid
             placeholder="Date"
+            value={date}
+            disabled={reconciled}
             type="date"
+            onChange={(_e, { value }) => updateItem(id, { date: value })}
           />
         </Table.Cell>
         <Table.Cell width={3}>

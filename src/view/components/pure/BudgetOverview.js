@@ -1,10 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Segment, Header, Divider, Statistic } from 'semantic-ui-react';
+import { Segment, Header, Divider, Statistic, Select } from 'semantic-ui-react';
 
 const BudgetData = props => (
   <div>
     <Segment>
+      <Select
+        options={props.frequencyOptions}
+        value={props.activeFrequency}
+        onChange={(_e, { value }) => props.updateFrequency(value)}
+        fluid
+      />
       <Header>Incomes</Header>
       <div>
         {props.incomes.map(group => (

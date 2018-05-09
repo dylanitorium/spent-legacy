@@ -5,22 +5,12 @@ const EventList = props => {
   const { items, for: Component } = props;
 
   return (
-    <Table>
+    <Table compact>
       <Table.Body>
         {
-          items.length <= 0
-            ? (
-              <Table.Row>
-                <Table.Cell>
-                  You have no unreconciled events
-                </Table.Cell>
-              </Table.Row>
-            )
-            : (
-              items.map(item => (
-                <Component key={item.id} {...item} />
-              ))
-            )
+          items.map(item => (
+            <Component key={item.id} {...item} />
+          ))
         }
       </Table.Body>
     </Table>

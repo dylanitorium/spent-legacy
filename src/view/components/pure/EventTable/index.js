@@ -1,10 +1,22 @@
 import React from 'react';
-import { Header, Button } from 'semantic-ui-react';
+import { Header, Button, Table } from 'semantic-ui-react';
 import Flexed from 'view/components/pure/Flexed';
 import EventList from './EventList';
 
+const SingleCell = ({ children }) => (
+  <Table>
+    <Table.Body>
+      <Table.Row>
+        <Table.Cell>
+          {children}
+        </Table.Cell>
+      </Table.Row>
+    </Table.Body>
+  </Table>
+);
+
 const EventTable = props => {
-  const { title, namespace, createEvent, ...passThrough } = props;
+  const { title, namespace, reconciledItems, unreconciledItems, createEvent, ...passThrough } = props;
 
   return (
     <div>
@@ -19,7 +31,29 @@ const EventTable = props => {
           onClick={() => createEvent()}
         />
       </Flexed>
-      <EventList {...passThrough} />
+      {
+        unreconciledItems.length > 0
+          ? (
+            <EventList {...passThrough} items={unreconciledItems} />
+          )
+          : (
+            <SingleCell>
+              You have no unreconciled events
+            </SingleCell>
+          )
+      }
+      <Header>
+        Reconciled Events
+      </Header>
+      {
+        reconciledItems.length > 0
+          ? <EventList {...passThrough} items={reconciledItems} />
+          : (
+            <SingleCell>
+              You have no reconciled events
+            </SingleCell>
+          )
+      }
     </div>
   )
 }
