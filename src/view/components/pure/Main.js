@@ -7,6 +7,7 @@ import Expenses from 'view/components/connected/Expenses';
 import BudgetOverview from 'view/components/connected/BudgetOverview';
 import IncomeEvents from 'view/components/connected/IncomeEvents';
 import ExpenseEvents from 'view/components/connected/ExpenseEvents';
+import Tracking from 'view/components/connected/Tracking';
 
 class ActiveBudget extends Component {
   static tabs = {
@@ -14,10 +15,11 @@ class ActiveBudget extends Component {
     EXPENSES: 'expenses',
     INCOME_EVENTS: 'income events',
     EXPENSE_EVENTS: 'expense events',
+    TRACKING: 'tracking',
   }
 
   state = {
-    activeTab: ActiveBudget.tabs.EXPENSES,
+    activeTab: ActiveBudget.tabs.INCOME,
     contextRef: null,
   }
 
@@ -31,31 +33,22 @@ class ActiveBudget extends Component {
         <Grid padded>
           <Grid.Column width={12}>
             <Menu pointing secondary>
-              <Menu.Item
-                name={ActiveBudget.tabs.INCOMES}
-                active={this.isActiveTab(ActiveBudget.tabs.INCOMES)}
-                onClick={() => this.handleTabClick(ActiveBudget.tabs.INCOMES)}
-              />
-              <Menu.Item
-                name={ActiveBudget.tabs.EXPENSES}
-                active={this.isActiveTab(ActiveBudget.tabs.EXPENSES)}
-                onClick={() => this.handleTabClick(ActiveBudget.tabs.EXPENSES)}
-              />
-              <Menu.Item
-                name={ActiveBudget.tabs.INCOME_EVENTS}
-                active={this.isActiveTab(ActiveBudget.tabs.INCOME_EVENTS)}
-                onClick={() => this.handleTabClick(ActiveBudget.tabs.INCOME_EVENTS)}
-              />
-              <Menu.Item
-                name={ActiveBudget.tabs.EXPENSE_EVENTS}
-                active={this.isActiveTab(ActiveBudget.tabs.EXPENSE_EVENTS)}
-                onClick={() => this.handleTabClick(ActiveBudget.tabs.EXPENSE_EVENTS)}
-              />
+              {
+                Object.keys(ActiveBudget.tabs).map(tab => (
+                  <Menu.Item
+                    key={tab}
+                    name={ActiveBudget.tabs[tab]}
+                    active={this.isActiveTab(ActiveBudget.tabs[tab])}
+                    onClick={() => this.handleTabClick(ActiveBudget.tabs[tab])}
+                  />
+                ))
+              }
             </Menu>
             <Incomes visible={this.isActiveTab(ActiveBudget.tabs.INCOMES)} />
             <Expenses visible={this.isActiveTab(ActiveBudget.tabs.EXPENSES)} />
             <IncomeEvents visible={this.isActiveTab(ActiveBudget.tabs.INCOME_EVENTS)} />
             <ExpenseEvents visible={this.isActiveTab(ActiveBudget.tabs.EXPENSE_EVENTS)} />
+            <Tracking visible={this.isActiveTab(ActiveBudget.tabs.TRACKING)} />
           </Grid.Column>
           <Grid.Column width={4}>
             <BudgetOverview />

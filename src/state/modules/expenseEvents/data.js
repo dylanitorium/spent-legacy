@@ -3,7 +3,7 @@ import createCrudState from 'state/utils/createCrudState';
 const initialState = {
   label: '',
   budgetId: null,
-  expenseId: null,
+  itemId: null,
   amount: 0,
   date: '',
   reconciled: false,

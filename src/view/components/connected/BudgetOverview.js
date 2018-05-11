@@ -10,10 +10,10 @@ import BudgetOverview from 'view/components/pure/BudgetOverview';
 import { FREQUENCY_OPTIONS } from 'state/constants';
 
 const mapStateToProps = () => {
-  const incomesOverviewSelector = incomeSelectors.makeItemsOverviewSelector(true);
-  const incomesTotalSelector = incomeSelectors.makeItemsTotalSelector(true);
-  const expensesOverviewSelector = expenseSelectors.makeItemsOverviewSelector(true);
-  const expensesTotalSelector = expenseSelectors.makeItemsTotalSelector(true);
+  const incomesOverviewSelector = incomeSelectors.makeItemsBudgetOverviewSelector(true);
+  const incomesTotalSelector = incomeSelectors.makeItemsBudgetTotalSelector(true);
+  const expensesOverviewSelector = expenseSelectors.makeItemsBudgetOverviewSelector(true);
+  const expensesTotalSelector = expenseSelectors.makeItemsBudgetTotalSelector(true);
   const budgetBalanceSelector = makeBudgetBalanceSelector(true);
 
   return (state, props) => {

@@ -1,7 +1,8 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
+import moment from 'moment';
 import { FREQUENCY_FACTORS } from 'state/constants';
-import { where, by, select, call, combineQueries } from 'view/utils/arrayUtils';
+import { where, by, select, call, combineQueries, sum } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
@@ -23,6 +24,8 @@ const sumGroups = (items, groups) => {
     ...ungrouped,
   ];
 };
+
+const dateAsUnixMilli = date => moment(date, 'YYYY-MM-DD').valueOf();
 
 const adjustToFrequency = frequency => amount => amount / FREQUENCY_FACTORS[frequency];
 
@@ -52,6 +55,8 @@ export const activeBudgetLabelSelector = createSelector(
 );
 
 export const budgetOverviewFrequencySelector = state => state.app.budgets.overviewFrequency;
+
+export const trackingPeriodSelector = state => state.app.tracking.trackingPeriod;
 
 // Groups
 export const groupSelectors = (() => {
@@ -111,7 +116,7 @@ export const itemSelectorFactory = name => {
 
   const excludedItemsIdSelector = state => state.app[name].excluded;
 
-  const makeItemsOverviewSelector = (format = false) => createSelector(
+  const makeItemsOverviewSelector = () => createSelector(
     [
       activeBudgetIdSelector,
       itemsSelector,
@@ -120,7 +125,7 @@ export const itemSelectorFactory = name => {
       excludedItemsIdSelector,
       budgetOverviewFrequencySelector,
     ],
-    (activeBudgetId, items, groups, excludedGroups, excludedItems, frequency) => {
+    (activeBudgetId, items, groups, excludedGroups, excludedItems) => {
       const filteredGroups = groups.filter(combineQueries([
         where('namespace').is(name),
         where('budgetId').is(activeBudgetId),
@@ -129,30 +134,57 @@ export const itemSelectorFactory = name => {
 
       const filteredItems = items.filter(where('id').isNotIn(excludedItems));
 
-      let sums = sumGroups(filteredItems, filteredGroups);
-      sums = sums.map(call(adjustToFrequency(frequency)).on('amount'));
+      return sumGroups(filteredItems, filteredGroups);
+    }
+  );
+
+  const makeItemsBudgetOverviewSelector = (format = false) => createSelector(
+    [makeItemsOverviewSelector(), budgetOverviewFrequencySelector],
+    (overviews, frequency) => {
+      const sums = overviews.map(call(adjustToFrequency(frequency)).on('amount'));
       return format ? sums.map(call(formatMoney).on('amount')) : sums;
     }
   );
 
-  const makeItemsTotalSelector = (format = false) => createSelector(
+  const makeItemsTrackingOverviewSelector = (format = false) => createSelector(
+    [makeItemsOverviewSelector(), trackingPeriodSelector],
+    (overviews, period) => {
+      const sums = overviews.map(call(adjustToFrequency(period)).on('amount'));
+      return format ? sums.map(call(formatMoney).on('amount')) : sums;
+    }
+  );
+
+  const makeItemsTotalSelector = () => createSelector(
     [
       activeBudgetIdSelector,
       itemsSelector,
       excludedItemsIdSelector,
       groupSelectors.excludedGroupsIdSelector,
-      budgetOverviewFrequencySelector
     ],
-    (activeBudgetId, items, excludedItems, excludedGroups, frequency) => {
+    (activeBudgetId, items, excludedItems, excludedGroups) => {
       const filteredItems = items.filter(combineQueries([
         where('budgetId').is(activeBudgetId),
         where('id').isNotIn(excludedItems),
         where('groupId').isNotIn(excludedGroups),
       ]));
 
-      let total = reduceAmounts(filteredItems);
-      total = adjustToFrequency(frequency)(total)
-      return format ? formatMoney(total) : total;
+      return reduceAmounts(filteredItems);
+    }
+  );
+
+  const makeItemsBudgetTotalSelector = (format = false) => createSelector(
+    [makeItemsTotalSelector(), budgetOverviewFrequencySelector],
+    (total, frequency) => {
+      const adjustedTotal = adjustToFrequency(frequency)(total);
+      return format ? formatMoney(adjustedTotal) : total
+    }
+  );
+
+  const makeItemsTrackingTotalSelector = (format = false) => createSelector(
+    [makeItemsTotalSelector(), trackingPeriodSelector],
+    (total, period) => {
+      const adjustedTotal = adjustToFrequency(period)(total);
+      return format ? formatMoney(adjustedTotal) : total
     }
   );
 
@@ -196,7 +228,11 @@ export const itemSelectorFactory = name => {
     makeItemSelector,
     makeItemIdsForGroupSelector,
     makeItemsOverviewSelector,
+    makeItemsBudgetOverviewSelector,
+    makeItemsTrackingOverviewSelector,
     makeItemsTotalSelector,
+    makeItemsBudgetTotalSelector,
+    makeItemsTrackingTotalSelector,
     makeGroupedItemsSelector,
     makeIsItemExcludedSelector,
     makeIsGroupExcludedByItemIdSelector,
@@ -211,13 +247,19 @@ const itemEventSelectorFactory = (name) => {
   const itemEventsSelector = state => state.data[name].records;
 
   const reconciledItemsEventsSelector = createSelector(
-    [itemEventsSelector],
-    items => items.filter(where('reconciled').is(true))
+    [activeBudgetIdSelector, itemEventsSelector],
+    (activeBudgetId, items) => items.filter(combineQueries([
+      where('budgetId').is(activeBudgetId),
+      where('reconciled').is(true),
+    ]))
   );
 
   const unreconciledItemsEventsSelector = createSelector(
-    [itemEventsSelector],
-    items => items.filter(where('reconciled').isNot(true))
+    [activeBudgetIdSelector, itemEventsSelector],
+    (activeBudgetId, items) => items.filter(combineQueries([
+      where('budgetId').is(activeBudgetId),
+      where('reconciled').isNot(true),
+    ]))
   );
 
   const itemEventSelector = createSelector(
@@ -226,8 +268,6 @@ const itemEventSelectorFactory = (name) => {
   );
 
   const makeItemEventSelector = () => itemEventSelector;
-
-
 
   return {
     itemEventsSelector,
@@ -241,11 +281,52 @@ const itemEventSelectorFactory = (name) => {
 export const incomeEventSelectors = itemEventSelectorFactory('incomeEvents');
 export const expenseEventSelectors = itemEventSelectorFactory('expenseEvents');
 
+
+const makeTrackingSelectors = (itemName, eventName) => {
+  const itemSelectors = itemSelectorFactory(itemName);
+  const itemEventSelectors = itemEventSelectorFactory(eventName);
+
+  const makeItemTracksSelector = () => createSelector(
+    [
+      trackingPeriodSelector,
+      itemSelectors.itemsSelector,
+      itemEventSelectors.reconciledItemsEventsSelector,
+    ],
+    (period, items, reconciledEvents) => {
+      const filteredEvents = reconciledEvents.filter(
+        where('date')
+          .passedThrough(dateAsUnixMilli)
+          .isGreaterThan(moment().subtract(1, period.valueOf()))
+      );
+
+      return items.map(item => {
+        return {
+          label: item.label,
+          expected: formatMoney(adjustToFrequency(period)(item.amount)),
+          actual: formatMoney(filteredEvents.filter(where('itemId').is(item.id)).reduce(sum('amount'), 0)),
+        }
+      });
+    }
+  );
+
+  return {
+    makeItemTracksSelector
+  };
+};
+
+export const incomeTrackingSelectors = makeTrackingSelectors('incomes', 'incomeEvents');
+export const expenseTrackingSelectors = makeTrackingSelectors('expenses', 'expenseEvents');
+
+
 // Combined
 export const makeBudgetBalanceSelector = (format = false) => createSelector(
-  [incomeSelectors.makeItemsTotalSelector(), expenseSelectors.makeItemsTotalSelector()],
-  (income, expenses) => {
-    const balance = income - expenses;
+  [
+    incomeSelectors.makeItemsTotalSelector(),
+    expenseSelectors.makeItemsTotalSelector(),
+    budgetOverviewFrequencySelector,
+  ],
+  (income, expenses, frequency) => {
+    const balance = adjustToFrequency(frequency)(income - expenses);
     return format ? formatMoney(balance) : balance;
   }
 );
