@@ -5,7 +5,7 @@ export const appActionTypes = {
 };
 
 export const appActions = {
-  toggleExcludeExpense: id => ({
+  toggleExclude: id => ({
     type: appActionTypes.TOGGLE_EXCLUDE_EXPENSE,
     id,
   }),

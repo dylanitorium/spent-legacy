@@ -18,7 +18,7 @@ const connectItem = (selectors, actions) => {
   const mapDispatchToProps = {
     updateItem: actions.update,
     deleteItem: actions.delete,
-    toggleExclude: actions.toggleExcludeIncome,
+    toggleExclude: actions.toggleExclude,
   };
 
   return connect(mapStateToProps, mapDispatchToProps)(Item);

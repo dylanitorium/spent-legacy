@@ -1,6 +1,7 @@
 import React from 'react';
-import { Header, Button, Table } from 'semantic-ui-react';
+import { Header, Button, Table, Input } from 'semantic-ui-react';
 import Flexed from 'view/components/pure/Flexed';
+import CSVImportButton from 'view/components/pure/CSVImportButton';
 import EventList from './EventList';
 
 const SingleCell = ({ children }) => (
@@ -15,6 +16,26 @@ const SingleCell = ({ children }) => (
   </Table>
 );
 
+// const getData = async (file) => {
+//   const reader = new FileReader();
+//   reader.readAsText(file);
+//   return new Promise((resolve) => {
+//     reader.onloadend = () => resolve(reader.result);
+//   });
+// };
+
+// const handleSelectFile = async (e) => {
+//   const { files } = e.target;
+
+//   if (files.length) {
+//     const file = files[0];
+
+//     const string = await getData(file);
+
+//     console.log(string);
+//   }
+// };
+
 const EventTable = props => {
   const { title, namespace, reconciledItems, unreconciledItems, createEvent, ...passThrough } = props;
 
@@ -24,12 +45,15 @@ const EventTable = props => {
         <Header>
           {title}
         </Header>
-        <Button
-          content="Add Event"
-          icon="plus"
-          labelPosition="left"
-          onClick={() => createEvent()}
-        />
+        <div>
+          <CSVImportButton onChange={data => console.log(data)} style={{ marginRight: '1rem' }} />
+          <Button
+            content="Add Event"
+            icon="plus"
+            labelPosition="left"
+            onClick={() => createEvent()}
+          />
+        </div>
       </Flexed>
       {
         unreconciledItems.length > 0

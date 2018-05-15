@@ -7,7 +7,8 @@ import Expenses from 'view/components/connected/Expenses';
 import BudgetOverview from 'view/components/connected/BudgetOverview';
 import IncomeEvents from 'view/components/connected/IncomeEvents';
 import ExpenseEvents from 'view/components/connected/ExpenseEvents';
-import Tracking from 'view/components/connected/Tracking';
+import IncomeTracking from 'view/components/connected/IncomeTracking';
+import ExpenseTracking from 'view/components/connected/ExpenseTracking';
 
 class ActiveBudget extends Component {
   static tabs = {
@@ -15,11 +16,12 @@ class ActiveBudget extends Component {
     EXPENSES: 'expenses',
     INCOME_EVENTS: 'income events',
     EXPENSE_EVENTS: 'expense events',
-    TRACKING: 'tracking',
+    INCOME_TRACKING: 'income tracking',
+    EXPENSE_TRACKING: 'expense tracking',
   }
 
   state = {
-    activeTab: ActiveBudget.tabs.INCOME,
+    activeTab: ActiveBudget.tabs.INCOME_EVENTS,
     contextRef: null,
   }
 
@@ -48,7 +50,8 @@ class ActiveBudget extends Component {
             <Expenses visible={this.isActiveTab(ActiveBudget.tabs.EXPENSES)} />
             <IncomeEvents visible={this.isActiveTab(ActiveBudget.tabs.INCOME_EVENTS)} />
             <ExpenseEvents visible={this.isActiveTab(ActiveBudget.tabs.EXPENSE_EVENTS)} />
-            <Tracking visible={this.isActiveTab(ActiveBudget.tabs.TRACKING)} />
+            <IncomeTracking visible={this.isActiveTab(ActiveBudget.tabs.INCOME_TRACKING)} />
+            <ExpenseTracking visible={this.isActiveTab(ActiveBudget.tabs.EXPENSE_TRACKING)} />
           </Grid.Column>
           <Grid.Column width={4}>
             <BudgetOverview />

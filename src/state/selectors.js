@@ -1,8 +1,8 @@
 import { createSelector } from 'reselect';
 import moneyFormatter from 'money-formatter';
 import moment from 'moment';
-import { FREQUENCY_FACTORS } from 'state/constants';
-import { where, by, select, call, combineQueries, sum } from 'view/utils/arrayUtils';
+import { FREQUENCY_FACTORS, FREQUENCY_MAP } from 'state/constants';
+import { where, by, select, call, combineQueries, sum, is, combine, through, pluck } from 'view/utils/arrayUtils';
 
 const reduceAmounts = items => items.reduce((a, { amount, frequency }) => a + (amount * FREQUENCY_FACTORS[frequency]), 0);
 
@@ -27,6 +27,7 @@ const sumGroups = (items, groups) => {
 
 const dateAsUnixMilli = date => moment(date, 'YYYY-MM-DD').valueOf();
 
+const standardiseAmount = (amount, frequency) => (amount * FREQUENCY_FACTORS[frequency]);
 const adjustToFrequency = frequency => amount => amount / FREQUENCY_FACTORS[frequency];
 
 // Selectors
@@ -225,6 +226,7 @@ export const itemSelectorFactory = name => {
   return {
     itemsSelector,
     itemSelector,
+    excludedItemsIdSelector,
     makeItemSelector,
     makeItemIdsForGroupSelector,
     makeItemsOverviewSelector,
@@ -282,30 +284,71 @@ export const incomeEventSelectors = itemEventSelectorFactory('incomeEvents');
 export const expenseEventSelectors = itemEventSelectorFactory('expenseEvents');
 
 
-const makeTrackingSelectors = (itemName, eventName) => {
+const makeTrackingSelectors = (itemName, eventName, factor) => {
   const itemSelectors = itemSelectorFactory(itemName);
   const itemEventSelectors = itemEventSelectorFactory(eventName);
 
   const makeItemTracksSelector = () => createSelector(
     [
       trackingPeriodSelector,
-      itemSelectors.itemsSelector,
+      itemSelectors.makeGroupedItemsSelector(),
+      itemSelectors.excludedItemsIdSelector,
+      groupSelectors.excludedGroupsIdSelector,
       itemEventSelectors.reconciledItemsEventsSelector,
     ],
-    (period, items, reconciledEvents) => {
+    (period, groups, excludedItems, excludedGroups, reconciledEvents) => {
+      const subtractArgs = period === FREQUENCY_MAP.FORTNIGHT ? [2, 'weeks'] : [1, period];
       const filteredEvents = reconciledEvents.filter(
         where('date')
           .passedThrough(dateAsUnixMilli)
-          .isGreaterThan(moment().subtract(1, period.valueOf()))
+          .isGreaterThan(moment().subtract(...subtractArgs))
       );
 
-      return items.map(item => {
+
+
+      const formatItem = (item) => {
+        const eventsForItem = filteredEvents.filter(where('itemId').is(item.id));
+        const actual = eventsForItem.reduce(sum('amount'), 0);
+        const expected = adjustToFrequency(period)(standardiseAmount(item.amount, item.frequency));
+        const variance = actual - expected * factor;
         return {
-          label: item.label,
-          expected: formatMoney(adjustToFrequency(period)(item.amount)),
-          actual: formatMoney(filteredEvents.filter(where('itemId').is(item.id)).reduce(sum('amount'), 0)),
-        }
+          ...item,
+          expected: formatMoney(expected),
+          actual: formatMoney(actual),
+          variance: formatMoney(variance),
+          positive: is(variance).positive,
+        };
+      };
+
+      const calculateIncludedEvents = items => items.filter(where('id').isNotIn(excludedItems)).map(formatItem);
+
+      const unallocatedGroups = groups.filter(where('id').isIn(excludedGroups));
+      const unallocatedItems = [
+        ...groups.reduce(combine('items'), []).filter(where('id').isIn(excludedItems)),
+        ...unallocatedGroups.reduce(combine('items'), []),
+      ];
+
+      const uniqueUnallocatedItems = unallocatedItems.filter(where('id').isUnique);
+
+      const formatAsUnallocated = item => ({
+        ...item,
+        label: `(${item.label})`,
+        amount: 0,
       });
+
+      const unallocated = {
+        label: 'Unallocated',
+        items: uniqueUnallocatedItems.map(through([formatAsUnallocated, formatItem])),
+      };
+
+      const includedGroups = groups
+        .filter(where('id').isNotIn(excludedGroups))
+        .map(call(calculateIncludedEvents).on('items'));
+
+      return [
+        ...includedGroups,
+        unallocated,
+      ];
     }
   );
 
@@ -314,8 +357,8 @@ const makeTrackingSelectors = (itemName, eventName) => {
   };
 };
 
-export const incomeTrackingSelectors = makeTrackingSelectors('incomes', 'incomeEvents');
-export const expenseTrackingSelectors = makeTrackingSelectors('expenses', 'expenseEvents');
+export const incomeTrackingSelectors = makeTrackingSelectors('incomes', 'incomeEvents', 1);
+export const expenseTrackingSelectors = makeTrackingSelectors('expenses', 'expenseEvents', -1);
 
 
 // Combined
