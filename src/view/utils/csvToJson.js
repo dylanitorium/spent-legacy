@@ -1,8 +1,13 @@
-const csvToJson = (string, headerConfig = {}) => {
-  const filterEmptyRows = r => !!r;
-  const replaceHeaders = header => headerConfig[header] || header;
+const defaultHeaderConfig = {
+  row: 0,
+  schema: {}
+};
 
-  const rows = string.split('\n').filter(filterEmptyRows);
+const csvToJson = (string, headerConfig = defaultHeaderConfig) => {
+  const whereNotEmpty = r => !!r;
+  const replaceHeaders = header => headerConfig.schema[header];
+
+  const rows = string.split('\n').filter(whereNotEmpty).slice(headerConfig.row);
   const headers = rows.shift().split(',').map(replaceHeaders);
 
   return rows.map((row) => {
@@ -10,9 +15,12 @@ const csvToJson = (string, headerConfig = {}) => {
     const record = {};
 
     columns.forEach((column, index) => {
-      record[headers[index]] = column;
+      const key = headers[index];
+      if (key) record[key] = column;
     });
 
     return record;
   });
 };
+
+export default csvToJson;

@@ -16,28 +16,8 @@ const SingleCell = ({ children }) => (
   </Table>
 );
 
-// const getData = async (file) => {
-//   const reader = new FileReader();
-//   reader.readAsText(file);
-//   return new Promise((resolve) => {
-//     reader.onloadend = () => resolve(reader.result);
-//   });
-// };
-
-// const handleSelectFile = async (e) => {
-//   const { files } = e.target;
-
-//   if (files.length) {
-//     const file = files[0];
-
-//     const string = await getData(file);
-
-//     console.log(string);
-//   }
-// };
-
 const EventTable = props => {
-  const { title, namespace, reconciledItems, unreconciledItems, createEvent, ...passThrough } = props;
+  const { title, namespace, reconciledItems, unreconciledItems, createEvent, createEventsFromImport, ...passThrough } = props;
 
   return (
     <div>
@@ -46,7 +26,13 @@ const EventTable = props => {
           {title}
         </Header>
         <div>
-          <CSVImportButton onChange={data => console.log(data)} style={{ marginRight: '1rem' }} />
+          <CSVImportButton headerConfig={{
+            row: 2,
+            schema: {
+            'Transaction Date': 'date',
+            'Amount': 'amount',
+            'Reference': 'label',
+          }}} onImport={createEventsFromImport} style={{ marginRight: '1rem' }} onError={e => console.log(e)} />
           <Button
             content="Add Event"
             icon="plus"

@@ -5,11 +5,13 @@ import csvToJson from 'view/utils/csvToJson';
 
 export default class CSVImportButton extends Component {
   static propTypes = {
+    headerConfig: PropTypes.object,
     onChange: PropTypes.func,
     onError: PropTypes.func,
   }
 
   static defaultProps = {
+    headerConfig: {},
     onChange: () => {},
     onError: () => {},
   }
@@ -33,7 +35,7 @@ export default class CSVImportButton extends Component {
 
     try {
       const data = await this.getData(file);
-      this.props.onChange(csvToJson(data));
+      this.props.onImport(csvToJson(data, this.props.headerConfig));
     } catch (e) {
       this.props.onError(e);
     }
