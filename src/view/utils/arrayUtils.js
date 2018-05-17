@@ -11,6 +11,7 @@ export const where = name => ({
   ),
   isNegative: ({ [name]: value }) => is(parseInt(value, 10)).negative,
   isPositive: ({ [name]: value }) => is(parseInt(value, 10)).positive,
+  isUndefined: ({ [name]: value }) => typeof value === 'undefined',
   value: {
     is: value => _value => _value === value,
     isNot: value => _value => _value !== value,

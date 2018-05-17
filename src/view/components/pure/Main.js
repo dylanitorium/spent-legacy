@@ -9,6 +9,7 @@ import IncomeEvents from 'view/components/connected/IncomeEvents';
 import ExpenseEvents from 'view/components/connected/ExpenseEvents';
 import IncomeTracking from 'view/components/connected/IncomeTracking';
 import ExpenseTracking from 'view/components/connected/ExpenseTracking';
+import Schemas from 'view/components/connected/Schemas';
 
 class ActiveBudget extends Component {
   static tabs = {
@@ -18,6 +19,7 @@ class ActiveBudget extends Component {
     EXPENSE_EVENTS: 'expense events',
     INCOME_TRACKING: 'income tracking',
     EXPENSE_TRACKING: 'expense tracking',
+    SCHEMAS: 'schemas',
   }
 
   state = {
@@ -52,6 +54,7 @@ class ActiveBudget extends Component {
             <ExpenseEvents visible={this.isActiveTab(ActiveBudget.tabs.EXPENSE_EVENTS)} />
             <IncomeTracking visible={this.isActiveTab(ActiveBudget.tabs.INCOME_TRACKING)} />
             <ExpenseTracking visible={this.isActiveTab(ActiveBudget.tabs.EXPENSE_TRACKING)} />
+            <Schemas visible={this.isActiveTab(ActiveBudget.tabs.SCHEMAS)} />
           </Grid.Column>
           <Grid.Column width={4}>
             <BudgetOverview />

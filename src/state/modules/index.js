@@ -5,7 +5,9 @@ import { dataReducer as groupsData, appReducer as groupsApp } from 'state/module
 import { dataReducer as expensesData, appReducer as expensesApp } from 'state/modules/expenses';
 import { dataReducer as incomeEventsData, appReducer as incomeEventsApp } from 'state/modules/incomeEvents';
 import { dataReducer as expenseEventsData, appReducer as expenseEventsApp } from 'state/modules/expenseEvents';
+import { dataReducer as schemasData, appReducer as schemasApp } from 'state/modules/schemas';
 import { reducer as trackingApp } from 'state/modules/tracking';
+
 
 const data = combineReducers({
   budgets: budgetsData,
@@ -14,6 +16,7 @@ const data = combineReducers({
   incomes: incomesData,
   incomeEvents: incomeEventsData,
   expenseEvents: expenseEventsData,
+  schemas: schemasData,
 });
 
 const app = combineReducers({
@@ -23,6 +26,7 @@ const app = combineReducers({
   expenses: expensesApp,
   incomeEvents: incomeEventsApp,
   expenseEvents: expenseEventsApp,
+  schemas: schemasApp,
   tracking: trackingApp,
 });
 

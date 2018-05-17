@@ -1,5 +1,4 @@
 import { connect } from 'react-redux';
-import { actions as eventActions } from 'state/modules/events';
 
 const connectEvents = (selectors, actions, Component) => {
   const mapStateToProps = () => {
@@ -11,7 +10,6 @@ const connectEvents = (selectors, actions, Component) => {
 
   const mapDispatchToProps = {
     createEvent: actions.createWithBudgetId,
-    createEventsFromImport: eventActions.createEventsFromImport
   };
 
   return connect(mapStateToProps, mapDispatchToProps)(Component);

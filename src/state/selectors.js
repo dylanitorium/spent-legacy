@@ -373,3 +373,23 @@ export const makeBudgetBalanceSelector = (format = false) => createSelector(
     return format ? formatMoney(balance) : balance;
   }
 );
+
+// Schemas
+const makeSchemaSelectors = () => {
+  const schemasSelector = state => state.data.schemas.records;
+
+  const activeSchemaIdSelector = state => state.app.schemas.activeSchema;
+
+  const activeSchemaSelector = createSelector(
+    [activeSchemaIdSelector, schemasSelector],
+    (activeSchemaId, schemas) => schemas.find(where('id').is(activeSchemaId)),
+  );
+
+  return {
+    schemasSelector,
+    activeSchemaSelector,
+  };
+}
+
+
+export const schemaSelectors = makeSchemaSelectors();

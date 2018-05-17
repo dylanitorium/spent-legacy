@@ -1,7 +1,6 @@
 import React from 'react';
 import { Header, Button, Table, Input } from 'semantic-ui-react';
 import Flexed from 'view/components/pure/Flexed';
-import CSVImportButton from 'view/components/pure/CSVImportButton';
 import EventList from './EventList';
 
 const SingleCell = ({ children }) => (
@@ -17,7 +16,10 @@ const SingleCell = ({ children }) => (
 );
 
 const EventTable = props => {
-  const { title, namespace, reconciledItems, unreconciledItems, createEvent, createEventsFromImport, ...passThrough } = props;
+  const {
+    title, namespace, reconciledItems, unreconciledItems,
+    createEvent, importButtonAs: CSVImportButton, ...passThrough
+  } = props;
 
   return (
     <div>
@@ -26,13 +28,7 @@ const EventTable = props => {
           {title}
         </Header>
         <div>
-          <CSVImportButton headerConfig={{
-            row: 2,
-            schema: {
-            'Transaction Date': 'date',
-            'Amount': 'amount',
-            'Reference': 'label',
-          }}} onImport={createEventsFromImport} style={{ marginRight: '1rem' }} onError={e => console.log(e)} />
+          <CSVImportButton style={{ marginRight: '1rem' }} />
           <Button
             content="Add Event"
             icon="plus"
