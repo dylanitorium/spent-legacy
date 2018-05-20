@@ -9,8 +9,8 @@ export const where = name => ({
   isUnique: ({ [name]: value }, index, array) => (
     typeof array.find(({ [name]: _value}, _index) => value === _value && index !== _index ) === 'undefined'
   ),
-  isNegative: ({ [name]: value }) => is(parseInt(value, 10)).negative,
-  isPositive: ({ [name]: value }) => is(parseInt(value, 10)).positive,
+  isNegative: ({ [name]: value }) => is(value).negative,
+  isPositive: ({ [name]: value }) => is(value).positive,
   isUndefined: ({ [name]: value }) => typeof value === 'undefined',
   value: {
     is: value => _value => _value === value,

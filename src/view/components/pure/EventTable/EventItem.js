@@ -15,7 +15,10 @@ export default class EventItem extends Component {
     const {
       id,
       itemId,
-      label,
+      reference,
+      accountName,
+      particulars,
+      code,
       amount,
       date,
       reconciled,
@@ -31,10 +34,46 @@ export default class EventItem extends Component {
             <Input
               fluid
               ref={this.handleInputRef}
-              value={label}
+              value={reference}
               disabled={reconciled}
-              placeholder="Label"
-              onChange={(_e, { value }) => updateItem(id, { label: value })}
+              placeholder="Reference"
+              onChange={(_e, { value }) => updateItem(id, { reference: value })}
+            />
+          }
+        </Table.Cell>
+        <Table.Cell width={3}>
+          {
+            <Input
+              fluid
+              ref={this.handleInputRef}
+              value={accountName}
+              disabled={reconciled}
+              placeholder="Account Name"
+              onChange={(_e, { value }) => updateItem(id, { accountName: value })}
+            />
+          }
+        </Table.Cell>
+        <Table.Cell width={3}>
+          {
+            <Input
+              fluid
+              ref={this.handleInputRef}
+              value={particulars}
+              disabled={reconciled}
+              placeholder="Particulars"
+              onChange={(_e, { value }) => updateItem(id, { particulars: value })}
+            />
+          }
+        </Table.Cell>
+        <Table.Cell width={3}>
+          {
+            <Input
+              fluid
+              ref={this.handleInputRef}
+              value={code}
+              disabled={reconciled}
+              placeholder="Code"
+              onChange={(_e, { value }) => updateItem(id, { code: value })}
             />
           }
         </Table.Cell>

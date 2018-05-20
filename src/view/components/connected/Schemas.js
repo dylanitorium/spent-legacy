@@ -10,6 +10,7 @@ const mapStateToProps = () => {
 }
 
 const mapDispatchToProps = {
+  createSchema: actions.createSchema,
   deleteSchema: actions.delete,
 };
 

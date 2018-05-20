@@ -8,9 +8,13 @@ export const actions = {
   ...appActions,
   createSchema: (data) => (
     (dispatch) => {
+      const { label, row, dateFormat, ...schema } = data;
+
       const createAction = dataActions.create({
-        ...data,
-        schema: JSON.parse(`{${data.schema}}`),
+        label,
+        row,
+        dateFormat,
+        schema,
       });
 
       dispatch(createAction);

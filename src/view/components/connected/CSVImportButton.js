@@ -7,12 +7,14 @@ import CSVImportButton from 'view/components/pure/CSVImportButton';
 const mapStateToProps = () => {
   return state => ({
     activeSchema: schemaSelectors.activeSchemaSelector(state),
+    activeSchemaId: schemaSelectors.activeSchemaIdSelector(state),
+    schemaOptions: schemaSelectors.schemaOptionsSelector(state),
   });
 };
 
 const mapDispatchToProps = {
   onImport: eventActions.createEventsFromImport,
-  createSchema: schemaActions.createSchema,
+  setActiveSchema: schemaActions.setActiveSchema,
   onError: (e) => console.log(e),
 };
 

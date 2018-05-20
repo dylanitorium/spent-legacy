@@ -385,9 +385,20 @@ const makeSchemaSelectors = () => {
     (activeSchemaId, schemas) => schemas.find(where('id').is(activeSchemaId)),
   );
 
+  const schemaOptionsSelector = createSelector(
+    [schemasSelector],
+    schemas => schemas.map(({ id, label }) => ({
+      value: id,
+      key: id,
+      text: label,
+    })),
+  );
+
   return {
     schemasSelector,
     activeSchemaSelector,
+    activeSchemaIdSelector,
+    schemaOptionsSelector
   };
 }
 
